@@ -14,4 +14,9 @@ public class HomeController {
         model.addAttribute("message", "Welcome to Capstone Project Management System!");
         return "home";  // Returns home.html from Thymeleaf templates
     }
+
+    @GetMapping("/dashboard")  // Maps to "/dashboard"
+    public String dashboard() {
+        return "dashboard";  // Returns dashboard.html from Thymeleaf templates
+    }
 }
