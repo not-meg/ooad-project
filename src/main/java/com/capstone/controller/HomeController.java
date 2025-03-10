@@ -1,0 +1,17 @@
+package com.capstone.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller  // Changed from @RestController
+@RequestMapping("/")  // Base path
+public class HomeController {
+
+    @GetMapping  // Maps to "/"
+    public String home(Model model) {
+        model.addAttribute("message", "Welcome to the Capstone Project!");
+        return "home";  // Returns home.html from Thymeleaf templates
+    }
+}
