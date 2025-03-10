@@ -11,7 +11,7 @@ public class HomeController {
 
     @GetMapping  // Maps to "/"
     public String home(Model model) {
-        model.addAttribute("message", "Welcome to the Capstone Project!");
+        model.addAttribute("message", "Welcome to Capstone Project Management System!");
         return "home";  // Returns home.html from Thymeleaf templates
     }
 }
