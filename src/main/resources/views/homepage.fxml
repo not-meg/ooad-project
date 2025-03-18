@@ -4,39 +4,54 @@
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.HomepageController">
-    <VBox spacing="20" alignment="center" style="-fx-background-color: linear-gradient(to bottom, #4facfe, #00f2fe); -fx-padding: 50;">
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.HomepageController"
+           style="-fx-background-color: linear-gradient(to bottom, #eceff1, #cfd8dc);">
+    
+    <VBox spacing="30" alignment="center" style="-fx-padding: 60;">
         
         <!-- Title -->
-        <Label text="Welcome to the Capstone Management System" 
-               style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);"/>
+        <Label text="Capstone Management System" 
+               style="-fx-font-size: 28px; 
+                      -fx-font-weight: bold; 
+                      -fx-text-fill: #263238; 
+                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 2);"/>
         
-        <!-- Description -->
-        <Label text="Manage your capstone projects efficiently with streamlined workflows, automated grading, and real-time collaboration. Enhance your project experience with an all-in-one platform designed for students and instructors." 
-               wrapText="true" maxWidth="500"
-               style="-fx-font-size: 14px; -fx-text-fill: white; -fx-alignment: center; -fx-opacity: 0.9;"/>
-        
-        <!-- Button Layout -->
-        <HBox spacing="20">
-            <Button text="Login" fx:id="loginButton" onAction="#handleLoginButton" style="
-                -fx-background-color: #ff7eb3;
-                -fx-text-fill: white;
-                -fx-font-weight: bold;
-                -fx-font-size: 14px;
-                -fx-background-radius: 20;
-                -fx-padding: 8 15;
-                -fx-cursor: hand;
-                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);"/>
+        <!-- Subtitle -->
+        <Label text="Streamlining Capstone Projects with Structured Workflows, Smart Automation, and Seamless Collaboration." 
+               wrapText="true" maxWidth="450"
+               style="-fx-font-size: 14px; 
+                      -fx-text-fill: #546e7a; 
+                      -fx-alignment: center;"/>
 
-            <Button text="Register" fx:id="registerButton" style="
-                -fx-background-color: #00c9a7;
-                -fx-text-fill: white;
-                -fx-font-weight: bold;
-                -fx-font-size: 14px;
-                -fx-background-radius: 20;
-                -fx-padding: 8 15;
-                -fx-cursor: hand;
-                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);"/>
-        </HBox>
+        <!-- Centered Button Layout -->
+        <VBox alignment="center">
+            <HBox spacing="25" alignment="center">
+                <Button text="Login" fx:id="loginButton" onAction="#handleLoginButton" style="
+                    -fx-background-color: transparent;
+                    -fx-border-color: #546e7a;
+                    -fx-border-width: 1.5;
+                    -fx-text-fill: #546e7a;
+                    -fx-font-size: 14px;
+                    -fx-font-weight: bold;
+                    -fx-padding: 10 25;
+                    -fx-cursor: hand;
+                    -fx-background-radius: 3;
+                    -fx-border-radius: 3;
+                    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
+                "/>
+                
+                <Button text="Register" fx:id="registerButton" style="
+                    -fx-background-color: #546e7a;
+                    -fx-text-fill: white;
+                    -fx-font-weight: bold;
+                    -fx-font-size: 14px;
+                    -fx-padding: 10 25;
+                    -fx-cursor: hand;
+                    -fx-background-radius: 3;
+                    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
+                "/>
+            </HBox>
+        </VBox>
+        
     </VBox>
 </StackPane>

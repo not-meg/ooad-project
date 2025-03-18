@@ -3,35 +3,50 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import javafx.scene.paint.*?>
 
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.LoginController">
-    <VBox spacing="15" alignment="center" style="-fx-background-color: linear-gradient(to bottom, #6dd5ed, #2193b0); -fx-padding: 30;">
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.LoginController"
+           style="-fx-background-color: linear-gradient(to bottom, #eceff1, #cfd8dc);">
+    
+    <VBox spacing="25" alignment="center" style="-fx-padding: 50;">
         
-        <!-- Title Label -->
-        <Label text="Welcome to Capstone Project" style="-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <!-- Title -->
+        <Label text="Capstone Management System" 
+               style="-fx-font-size: 26px; 
+                      -fx-font-weight: bold; 
+                      -fx-text-fill: #263238; 
+                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 2);"/>
         
         <!-- Input Fields -->
-        <GridPane hgap="10" vgap="10" alignment="center">
-            <Label text="Username:" style="-fx-text-fill: white; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <TextField fx:id="usernameField" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ffffff; -fx-padding: 5;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <GridPane hgap="10" vgap="15" alignment="center">
+            <Label text="Username:" style="-fx-text-fill: #546e7a; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="usernameField" style="
+                -fx-background-color: #ffffff;
+                -fx-border-color: #b0bec5;
+                -fx-border-radius: 4;
+                -fx-padding: 8;
+                -fx-font-size: 14px;
+            " GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-            <Label text="Password:" style="-fx-text-fill: white; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <PasswordField fx:id="passwordField" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #ffffff; -fx-padding: 5;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            <Label text="Password:" style="-fx-text-fill: #546e7a; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <PasswordField fx:id="passwordField" style="
+                -fx-background-color: #ffffff;
+                -fx-border-color: #b0bec5;
+                -fx-border-radius: 4;
+                -fx-padding: 8;
+                -fx-font-size: 14px;
+            " GridPane.columnIndex="1" GridPane.rowIndex="1"/>
         </GridPane>
 
         <!-- Login Button -->
         <Button text="Login" fx:id="loginButton" style="
-            -fx-background-color: #ff7eb3;
+            -fx-background-color: #546e7a;
             -fx-text-fill: white;
             -fx-font-weight: bold;
             -fx-font-size: 14px;
-            -fx-background-radius: 20;
-            -fx-padding: 8 15;
-            -fx-cursor: hand;">
-            <VBox.margin>
-                <Insets top="10"/>
-            </VBox.margin>
-        </Button>
+            -fx-padding: 10 25;
+            -fx-cursor: hand;
+            -fx-background-radius: 3;
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
+        "/>
     </VBox>
 </StackPane>
