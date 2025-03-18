@@ -9,21 +9,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CapstoneApplication extends Application {
-
+public class CapstoneApplication {
     public static void main(String[] args) {
-        SpringApplication.run(CapstoneApplication.class, args);
-        launch(args); // Standard JavaFX launch method
-    }
+        // Start Spring Boot in a separate thread
+        Thread springThread = new Thread(() -> SpringApplication.run(CapstoneApplication.class, args));
+        springThread.setDaemon(true);
+        springThread.start();
 
-    @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Capstone Project");
-        Label label = new Label("Welcome to JavaFX + Spring Boot!");
-        StackPane root = new StackPane(label);
-        Scene scene = new Scene(root, 600, 400);
-
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        // Start JavaFX application
+        Application.launch(JavaFXApp.class, args);
     }
 }
