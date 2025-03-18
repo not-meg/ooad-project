@@ -1,10 +1,6 @@
 package com.capstone;
 
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -16,7 +12,7 @@ public class CapstoneApplication {
         springThread.setDaemon(true);
         springThread.start();
 
-        // Start JavaFX application
-        Application.launch(JavaFXApp.class, args);
+        // Start JavaFX application on the correct thread
+        Application.launch(LoginView.class, args);
     }
 }
