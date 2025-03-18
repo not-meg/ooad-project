@@ -13,6 +13,6 @@ public class CapstoneApplication {
         springThread.start();
 
         // Start JavaFX application on the correct thread
-        Application.launch(LoginView.class, args);
+        Application.launch(HomepageView.class, args);
     }
 }
