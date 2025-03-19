@@ -40,7 +40,7 @@
                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
                 "/>
                 
-                <Button text="Register" fx:id="registerButton" style="
+                <Button text="Register" fx:id="registerButton" onAction="#handleRegisterButton" style="
                     -fx-background-color: #546e7a;
                     -fx-text-fill: white;
                     -fx-font-weight: bold;

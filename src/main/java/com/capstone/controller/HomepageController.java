@@ -13,15 +13,22 @@ public class HomepageController {
 
     @FXML
     private void handleLoginButton(ActionEvent event) {
+        loadScene(event, "/views/login.fxml", "Login Page");
+    }
+
+    @FXML
+    private void handleRegisterButton(ActionEvent event) {
+        loadScene(event, "/views/register.fxml", "Register Page");
+    }
+
+    private void loadScene(ActionEvent event, String fxmlPath, String title) {
         try {
-            // Load the login page FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
-            // Get the current stage from the event
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("Login Page");
+            stage.setTitle(title);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
