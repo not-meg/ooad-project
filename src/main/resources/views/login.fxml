@@ -38,7 +38,7 @@
         </GridPane>
 
         <!-- Login Button -->
-        <Button text="Login" fx:id="loginButton" style="
+        <Button text="Login" fx:id="loginButton" onAction="#switchToDashboard" style="
             -fx-background-color: #546e7a;
             -fx-text-fill: white;
             -fx-font-weight: bold;
