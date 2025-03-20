@@ -20,25 +20,33 @@
             
             <GridPane hgap="10" vgap="10">
                 <children>
+                    <!-- Member 1 -->
                     <Label text="Member 1:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                     <TextField fx:id="fullName1" promptText="Full Name" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
                     <TextField fx:id="email1" promptText="Email" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
                     <TextField fx:id="srn1" promptText="SRN" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="gender1" promptText="Gender" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
 
+                    <!-- Member 2 -->
                     <Label text="Member 2:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                     <TextField fx:id="fullName2" promptText="Full Name" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                     <TextField fx:id="email2" promptText="Email" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
                     <TextField fx:id="srn2" promptText="SRN" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="gender2" promptText="Gender" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
 
+                    <!-- Member 3 -->
                     <Label text="Member 3:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
                     <TextField fx:id="fullName3" promptText="Full Name" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                     <TextField fx:id="email3" promptText="Email" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
                     <TextField fx:id="srn3" promptText="SRN" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                    <ComboBox fx:id="gender3" promptText="Gender" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
 
+                    <!-- Member 4 -->
                     <Label text="Member 4:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
                     <TextField fx:id="fullName4" promptText="Full Name" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
                     <TextField fx:id="email4" promptText="Email" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
                     <TextField fx:id="srn4" promptText="SRN" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+                    <ComboBox fx:id="gender4" promptText="Gender" GridPane.columnIndex="4" GridPane.rowIndex="3"/>
                 </children>
             </GridPane>
         </VBox>
