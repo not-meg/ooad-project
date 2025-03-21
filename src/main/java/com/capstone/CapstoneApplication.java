@@ -1,18 +1,23 @@
 package com.capstone;
 
-import javafx.application.Application;
+import com.capstone.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CapstoneApplication {
-    public static void main(String[] args) {
-        // Start Spring Boot in a separate thread
-        Thread springThread = new Thread(() -> SpringApplication.run(CapstoneApplication.class, args));
-        springThread.setDaemon(true);
-        springThread.start();
+public class CapstoneApplication implements CommandLineRunner {
 
-        // Start JavaFX application on the correct thread
-        Application.launch(HomepageView.class, args);
+    @Autowired
+    private UserService userService;
+
+    public static void main(String[] args) {
+        SpringApplication.run(CapstoneApplication.class, args);
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        userService.createTestUser();
     }
 }
