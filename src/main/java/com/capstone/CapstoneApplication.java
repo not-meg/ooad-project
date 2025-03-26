@@ -5,6 +5,7 @@ import com.capstone.model.User;
 import com.capstone.service.TeamService;
 import com.capstone.service.UserService;
 import com.capstone.repository.UserRepository;
+import javafx.application.Application;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -27,7 +28,13 @@ public class CapstoneApplication implements CommandLineRunner {
     private UserRepository userRepository;  // Using UserRepository instead of StudentRepository
 
     public static void main(String[] args) {
-        SpringApplication.run(CapstoneApplication.class, args);
+        // Start Spring Boot in a separate thread
+        Thread springThread = new Thread(() -> SpringApplication.run(CapstoneApplication.class, args));
+        springThread.setDaemon(true);
+        springThread.start();
+
+        // Start JavaFX UI
+        Application.launch(HomepageView.class, args);
     }
 
     @Override

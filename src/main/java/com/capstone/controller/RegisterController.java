@@ -2,14 +2,14 @@ package com.capstone.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.collections.FXCollections;
 
 public class RegisterController {
 
     @FXML private TextField fullName1, email1, srn1, fullName2, email2, srn2;
     @FXML private TextField fullName3, email3, srn3, fullName4, email4, srn4;
-    @FXML private ComboBox<String> gender1, gender2, gender3, gender4;
+    @FXML private Label gender1, gender2, gender3, gender4;
     @FXML private TextField guideName, projectTitle;
     @FXML private PasswordField passwordField, confirmPasswordField;
     @FXML private ComboBox<String> projectDomain;
@@ -19,13 +19,6 @@ public class RegisterController {
         projectDomain.setItems(FXCollections.observableArrayList(
             "Cybersecurity", "Machine Learning", "Cloud Computing", "IoT", "Digital Twin"
         ));
-
-        FXCollections.observableArrayList("Male", "Female", "Other").forEach(gender -> {
-            gender1.getItems().add(gender);
-            gender2.getItems().add(gender);
-            gender3.getItems().add(gender);
-            gender4.getItems().add(gender);
-        });
     }
 
     @FXML
@@ -38,7 +31,7 @@ public class RegisterController {
     }
 
     private boolean validateFields() {
-        if (fullName1.getText().isEmpty() || email1.getText().isEmpty() || srn1.getText().isEmpty() || gender1.getValue() == null) {
+        if (fullName1.getText().isEmpty() || email1.getText().isEmpty() || srn1.getText().isEmpty() || gender1.getText().isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Registration Error", "Please fill in all Member 1 details including gender.");
             return false;
         }
