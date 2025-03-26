@@ -12,16 +12,18 @@ public class Team {
     private String problemStatement;
     private String facultyID;
     private Set<String> studentIDs; // Ensuring uniqueness
+    private String password; // New field
 
     public Team() {
         this.studentIDs = new HashSet<>(); // Enforce unique student IDs
     }
 
-    public Team(String teamID, String problemStatement, String facultyID) {
+    public Team(String teamID, String problemStatement, String facultyID, String password) {
         this.teamID = teamID;
         this.problemStatement = problemStatement;
         this.facultyID = facultyID;
         this.studentIDs = new HashSet<>();
+        this.password = password;
     }
 
     public String getTeamID() { return teamID; }
@@ -53,4 +55,7 @@ public class Team {
         }
         return false;
     }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }
