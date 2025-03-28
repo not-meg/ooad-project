@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.DashboardController"
-           style="-fx-background-color: linear-gradient(to bottom, #eceff1, #cfd8dc);">
+           style="-fx-background-color: linear-gradient(to bottom, #ECEFF1, #CFD8DC);">
     
-    <VBox spacing="30" alignment="center" style="-fx-padding: 60;">
+    <VBox spacing="40" alignment="center" style="-fx-padding: 60;">
         
         <!-- Title -->
         <Label text="Welcome to Capstone Project Management System" 
@@ -19,24 +18,71 @@
 
         <!-- Subtitle -->
         <Label text="Manage capstone projects efficiently with smart tools and automation." 
-               wrapText="true" maxWidth="450"
+               wrapText="true" maxWidth="500"
                style="-fx-font-size: 14px; 
                       -fx-text-fill: #546e7a; 
                       -fx-alignment: center;"/>
         
-        <!-- Centered Button Layout -->
-        <VBox alignment="center">
-            <Button text="Get Started" fx:id="startButton" onAction="#handleStartButton" style="
+        <!-- Team Details Section -->
+        <VBox spacing="20" alignment="center" style="
+              -fx-background-color: white;
+              -fx-padding: 20;
+              -fx-background-radius: 8;
+              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);
+              -fx-min-width: 400px;
+              -fx-max-width: 600px;">
+            
+            <Label text="Your Team" style=" 
+                  -fx-font-size: 20px; 
+                  -fx-font-weight: bold; 
+                  -fx-text-fill: #37474F;"/>
+            
+            <GridPane hgap="20" vgap="10" alignment="center">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="150" halignment="RIGHT"/>
+                    <ColumnConstraints minWidth="250" halignment="LEFT"/>
+                </columnConstraints>
+
+                <!-- Team ID -->
+                <Label text="Team ID:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <Label fx:id="teamIDLabel" text="T12345" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                
+                <!-- Problem Statement -->
+                <Label text="Problem Statement:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Label fx:id="problemStatementLabel" text="Automated Grading System" wrapText="true" maxWidth="250"
+                    style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                <!-- Faculty Mentor -->
+                <Label text="Faculty Mentor:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <Label fx:id="facultyLabel" text="Dr. A. Sharma" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            </GridPane>
+            
+        </VBox>
+        
+        <!-- Buttons -->
+        <HBox spacing="20" alignment="center">
+            <Button text="View Team" fx:id="viewTeamButton" onAction="#handleViewTeam" style="
                 -fx-background-color: #546e7a;
                 -fx-text-fill: white;
                 -fx-font-weight: bold;
                 -fx-font-size: 14px;
-                -fx-padding: 12 30;
+                -fx-padding: 10 25;
                 -fx-cursor: hand;
                 -fx-background-radius: 3;
                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
             "/>
-        </VBox>
+            
+            <Button text="Log Out" fx:id="logoutButton" onAction="#handleLogout" style="
+                -fx-background-color: #D32F2F;
+                -fx-text-fill: white;
+                -fx-font-weight: bold;
+                -fx-font-size: 14px;
+                -fx-padding: 10 25;
+                -fx-cursor: hand;
+                -fx-background-radius: 3;
+                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
+            "/>
+        </HBox>
         
     </VBox>
 </StackPane>
