@@ -7,27 +7,39 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import java.io.IOException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import java.io.IOException;
 
 @Component
 public class HomepageController {
 
+    private final ApplicationContext context;
+
+    // Inject Spring's ApplicationContext
+    public HomepageController(ApplicationContext context) {
+        this.context = context;
+    }
+
     @FXML
     private void handleLoginButton(ActionEvent event) {
-        loadScene(event, "/views/login.fxml", "Login Page");
+        loadSceneWithSpring(event, "/views/login.fxml", "Login Page", LoginController.class);
     }
 
     @FXML
     private void handleRegisterButton(ActionEvent event) {
-        loadScene(event, "/views/register.fxml", "Register Page");
+        loadSceneWithSpring(event, "/views/register.fxml", "Register Page", RegisterController.class);
     }
 
-    private void loadScene(ActionEvent event, String fxmlPath, String title) {
+    private <T> void loadSceneWithSpring(ActionEvent event, String fxmlPath, String title, Class<T> controllerClass) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Parent root = loader.load();
 
+            // Get the controller bean from Spring
+            T controller = context.getBean(controllerClass);
+            loader.setController(controller);
+
+            Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle(title);

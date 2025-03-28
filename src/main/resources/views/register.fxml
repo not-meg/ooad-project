@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
 
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.RegisterController"
+<StackPane xmlns:fx="http://javafx.com/fxml"
            style="-fx-background-color: linear-gradient(to bottom, #eceff1, #cfd8dc);">
     
     <VBox spacing="15" alignment="center" style="-fx-padding: 40;">

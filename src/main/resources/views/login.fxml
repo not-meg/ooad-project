@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.LoginController"
+<StackPane xmlns:fx="http://javafx.com/fxml"
            style="-fx-background-color: linear-gradient(to bottom, #eceff1, #cfd8dc);">
     
     <VBox spacing="25" alignment="center" style="-fx-padding: 50;">
@@ -47,8 +47,10 @@
             " GridPane.columnIndex="1" GridPane.rowIndex="1"/>
         </GridPane>
 
+        <Label fx:id="errorLabel" text="" style="-fx-text-fill: red;" />
+
         <!-- Login Button -->
-        <Button text="Login" fx:id="loginButton" onAction="#switchToDashboard" style="
+        <Button text="Login" fx:id="loginButton" onAction="#handleLogin" style="
             -fx-background-color: #546e7a;
             -fx-text-fill: white;
             -fx-font-weight: bold;

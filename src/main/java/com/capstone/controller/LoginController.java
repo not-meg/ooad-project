@@ -11,16 +11,19 @@ import javafx.scene.control.TextField;
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 import javafx.scene.Node;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
 
 @Controller
 public class LoginController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+
+    public LoginController(ApplicationContext context) {
+        this.authService = context.getBean(AuthService.class);
+    }
 
     @FXML
     private TextField usernameField;
@@ -65,3 +68,4 @@ public class LoginController {
         }
     }
 }
+
