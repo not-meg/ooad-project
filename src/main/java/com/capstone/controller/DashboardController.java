@@ -1,6 +1,8 @@
 package com.capstone.controller;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 
@@ -36,4 +38,14 @@ public class DashboardController {
         System.out.println("Logging out... (TODO: Implement logout)");
         // TODO: Implement logout logic & redirect to login screen
     }
+
+    @FXML
+private void handleSubmitPhaseX(ActionEvent event) {
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle("Submit Phase X Document");
+    alert.setHeaderText(null);
+    alert.setContentText("Feature to submit Phase X document is under development!");
+    alert.showAndWait();
+}
+
 }
