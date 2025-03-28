@@ -1,80 +1,42 @@
 package com.capstone;
 
-import com.capstone.model.User;
-import com.capstone.model.Student;
-import com.capstone.model.PhaseSubmission;
-import com.capstone.service.TeamService;
-import com.capstone.service.PhaseSubmissionService;
-import com.capstone.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.Optional;
-import java.util.Scanner;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
-public class CapstoneApplication implements CommandLineRunner {
+public class CapstoneApplication extends Application {
 
-    @Autowired
-    private TeamService teamService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PhaseSubmissionService phaseSubmissionService;
+    private static ConfigurableApplicationContext springContext;
 
     public static void main(String[] args) {
-        SpringApplication.run(CapstoneApplication.class, args); // ✅ Start Spring Boot
+        launch(args); // Start JavaFX UI
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        Scanner scanner = new Scanner(System.in);
+    public void init() {
+        // Initialize Spring Boot
+        springContext = SpringApplication.run(CapstoneApplication.class);
+    }
 
-        System.out.println("Enter your user ID (Student ID): ");
-        String studentID = scanner.nextLine();
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
+        loader.setControllerFactory(springContext::getBean); // Let Spring manage controllers
+        Parent root = loader.load();
 
-        // Fetch user from DB
-        Optional<User> userOpt = userRepository.findById(studentID);
-        if (userOpt.isEmpty() || !(userOpt.get() instanceof Student)) {
-            System.out.println("❌ Invalid user. Only students can log in.");
-            return;
-        }
+        primaryStage.setTitle("Capstone Project Management");
+        primaryStage.setScene(new Scene(root));
+        primaryStage.show();
+    }
 
-        System.out.println("Enter your Team ID: ");
-        String teamID = scanner.nextLine();
-
-        // Validate team existence
-        if (!teamService.teamExists(teamID)) {
-            System.out.println("❌ Team does not exist.");
-            return;
-        }
-
-        System.out.println("Enter team password: ");
-        String teamPassword = scanner.nextLine();
-
-        // Validate team password
-        if (!teamService.validateTeamPassword(teamID, teamPassword)) {
-            System.out.println("❌ Invalid team password. Try again.");
-            return;
-        }
-
-        System.out.println("✅ Login successful!");
-
-        System.out.println("Enter phase number: ");
-        int phase = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
-
-        System.out.println("Enter document path (e.g., /uploads/report.pdf): ");
-        String documentPath = scanner.nextLine();
-
-        // Submit Phase
-        PhaseSubmission submission = new PhaseSubmission(teamID, phase, documentPath);
-        phaseSubmissionService.submitPhase(submission);
-
-        System.out.println("✅ Phase " + phase + " submitted successfully for Team " + teamID);
+    @Override
+    public void stop() {
+        springContext.close(); // Shutdown Spring Boot properly
     }
 }

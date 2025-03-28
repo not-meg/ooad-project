@@ -18,7 +18,7 @@
         
         <!-- Input Fields -->
         <GridPane hgap="10" vgap="15" alignment="center">
-            <Label text="Username:" style="-fx-text-fill: #546e7a; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label text="SRN:" style="-fx-text-fill: #546e7a; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
             <TextField fx:id="usernameField" style="
                 -fx-background-color: #ffffff;
                 -fx-border-color: #b0bec5;
@@ -26,6 +26,16 @@
                 -fx-padding: 8;
                 -fx-font-size: 14px;
             " GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+            <Label text="Team ID:" style="-fx-text-fill: #546e7a; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="teamIDField" style="
+                    -fx-background-color: #ffffff;
+                    -fx-border-color: #b0bec5;
+                    -fx-border-radius: 4;
+                    -fx-padding: 8;
+                    -fx-font-size: 14px;
+                " GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
 
             <Label text="Password:" style="-fx-text-fill: #546e7a; -fx-font-size: 14px;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
             <PasswordField fx:id="passwordField" style="

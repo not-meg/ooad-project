@@ -1,5 +1,6 @@
 package com.capstone.controller;
 
+import com.capstone.service.AuthService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,12 +11,22 @@ import javafx.scene.control.TextField;
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 import javafx.scene.Node;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+
 import java.io.IOException;
 
+@Controller
 public class LoginController {
+
+    @Autowired
+    private AuthService authService;
 
     @FXML
     private TextField usernameField;
+
+    @FXML
+    private TextField teamIDField;
 
     @FXML
     private PasswordField passwordField;
@@ -25,8 +36,16 @@ public class LoginController {
 
     @FXML
     private void handleLogin(ActionEvent event) {
-        // For now, allow login without credentials
-        switchToDashboard(event);
+        String studentID = usernameField.getText();
+        String teamID = teamIDField.getText();
+        String teamPassword = passwordField.getText();
+
+        if (authService.authenticateUser(studentID, teamID, teamPassword)) {
+            switchToDashboard(event);
+        } else {
+            errorLabel.setText("Invalid credentials. Please try again.");
+            errorLabel.setStyle("-fx-text-fill: red;");
+        }
     }
 
     @FXML
@@ -35,21 +54,13 @@ public class LoginController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
             Parent root = loader.load();
 
-            // Ensure event source is valid
-            Node source = (Node) event.getSource();
-            if (source == null) {
-                errorLabel.setText("Error: Event source is null.");
-                return;
-            }
-
-            Stage stage = (Stage) source.getScene().getWindow();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Dashboard");
             stage.show();
         } catch (IOException e) {
             errorLabel.setText("Error loading dashboard.");
             errorLabel.setStyle("-fx-text-fill: red;");
-            System.out.println("FXML Load Error: " + e.getMessage());
             e.printStackTrace();
         }
     }

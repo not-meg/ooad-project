@@ -8,7 +8,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class HomepageController {
 
     @FXML
