@@ -39,27 +39,54 @@ public class LoginController {
 
     @FXML
     private void handleLogin(ActionEvent event) {
-        String studentID = usernameField.getText();
+        String userID = usernameField.getText();
         String teamID = teamIDField.getText();
-        String teamPassword = passwordField.getText();
+        String password = passwordField.getText();
 
-        if (authService.authenticateUser(studentID, teamID, teamPassword)) {
-            switchToDashboard(event);
-        } else {
-            errorLabel.setText("Invalid credentials. Please try again.");
+        if (userID.isBlank() || password.isBlank()) {
+            errorLabel.setText("User ID and Password are required.");
             errorLabel.setStyle("-fx-text-fill: red;");
+            return;
+        }
+
+        String authResult = authService.authenticateUser(userID, teamID, password);
+
+        switch (authResult) {
+            case "STUDENT":
+                switchToStudentDashboard(event);
+                break;
+            case "FACULTY":
+                switchToFacultyDashboard(event);
+                break;
+            case "MISSING_TEAM":
+                errorLabel.setText("Team ID is required for students.");
+                errorLabel.setStyle("-fx-text-fill: red;");
+                break;
+            default:
+                errorLabel.setText("Invalid credentials. Please try again.");
+                errorLabel.setStyle("-fx-text-fill: red;");
+                break;
         }
     }
 
     @FXML
-    private void switchToDashboard(ActionEvent event) {
+    private void switchToStudentDashboard(ActionEvent event) {
+        switchDashboard(event, "/views/student_dashboard.fxml", "Student Dashboard");
+    }
+
+    @FXML
+    private void switchToFacultyDashboard(ActionEvent event) {
+        switchDashboard(event, "/views/faculty_dashboard.fxml", "Faculty Dashboard");
+    }
+
+    private void switchDashboard(ActionEvent event, String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("Dashboard");
+            stage.setTitle(title);
             stage.show();
         } catch (IOException e) {
             errorLabel.setText("Error loading dashboard.");

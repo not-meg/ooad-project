@@ -17,32 +17,30 @@ public class AuthService {
     @Autowired
     private TeamService teamService;
 
-    public boolean authenticateUser(String userID, String teamID, String password) {
+    public String authenticateUser(String userID, String teamID, String password) {
         Optional<User> userOpt = userRepository.findById(userID);
-
+    
         if (userOpt.isEmpty()) {
-            return false; // User does not exist
+            return "INVALID"; // User does not exist
         }
-
+    
         User user = userOpt.get();
-
-        // Case 1: If user is a Student, they MUST provide a team ID and password should be validated from teams
+    
         if (user instanceof Student) {
             if (teamID == null || teamID.isBlank()) {
-                return false; // Students must provide a valid team ID
+                return "MISSING_TEAM"; // Students must provide a team ID
             }
             if (!teamService.teamExists(teamID) || !teamService.validateTeamPassword(teamID, password)) {
-                return false; // Invalid team or incorrect team password
+                return "INVALID"; // Invalid team or incorrect team password
             }
-        }
-        // Case 2: If user is a Faculty, they can log in without a team ID, validate password from user collection
-        else {
+            return "STUDENT"; // Authentication successful as a Student
+        } 
+        else { // If user is Faculty
             if (!user.getPassword().equals(password)) {
-                return false; // Incorrect faculty password
+                return "INVALID"; // Incorrect faculty password
             }
+            return "FACULTY"; // Authentication successful as a Faculty
         }
-
-        return true; // Authentication successful
-    }
+    }    
 }
 
