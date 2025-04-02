@@ -1,11 +1,14 @@
 package com.capstone.controller;
 
-import javafx.event.ActionEvent;
+import com.capstone.model.Faculty;
+import com.capstone.service.FacultyService;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
+@Controller
 public class FacultyDashboardController {
 
     @FXML private Label facultyNameLabel;
@@ -13,26 +16,50 @@ public class FacultyDashboardController {
     @FXML private Button viewTeamsButton;
     @FXML private Button logoutButton;
 
-    // Placeholder faculty info (Replace with actual backend data later)
-    private String facultyName = "Dr. A. Sharma";
-    private String department = "Computer Science";
+    private FacultyService facultyService; // Will be set manually in LoginController
+    private String loggedInFacultyID;
+
+    // Default constructor (required by FXMLLoader)
+    public FacultyDashboardController() {}
+
+    // Setter for manual service injection
+    public void setFacultyService(FacultyService facultyService) {
+        this.facultyService = facultyService;
+    }
+
+    public void setLoggedInFacultyID(String facultyID) {
+        this.loggedInFacultyID = facultyID;
+        loadFacultyDetails(); // Call this after facultyService is set
+    }
 
     @FXML
     public void initialize() {
-        // Set placeholders for faculty details
-        facultyNameLabel.setText(facultyName);
-        departmentLabel.setText(department);
+        System.out.println("FacultyDashboardController initialized!");
+    }
+
+    private void loadFacultyDetails() {
+        if (facultyService == null) {
+            System.out.println("Error: facultyService is null!");
+            return;
+        }
+
+        Faculty faculty = facultyService.getFacultyByID(loggedInFacultyID);
+        if (faculty != null) {
+            facultyNameLabel.setText(faculty.getName());
+            departmentLabel.setText(faculty.getDepartment());
+        } else {
+            facultyNameLabel.setText("Unknown");
+            departmentLabel.setText("Unknown");
+        }
     }
 
     @FXML
     private void handleViewTeams() {
-        System.out.println("View Teams button clicked! (TODO: Implement team view)");
-        // TODO: Navigate to the detailed teams view page
+        System.out.println("View Teams button clicked!");
     }
 
     @FXML
     private void handleLogout() {
-        System.out.println("Logging out... (TODO: Implement logout)");
-        // TODO: Implement logout logic & redirect to login screen
+        System.out.println("Logging out...");
     }
 }

@@ -1,6 +1,7 @@
 package com.capstone.controller;
 
 import com.capstone.service.AuthService;
+import com.capstone.service.FacultyService; // Import FacultyService
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,6 +14,7 @@ import javafx.stage.Stage;
 import javafx.scene.Node;
 import org.springframework.stereotype.Controller;
 import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
@@ -20,9 +22,12 @@ import java.io.IOException;
 public class LoginController {
 
     private final AuthService authService;
+    private final ApplicationContext applicationContext; // Spring context to fetch beans
 
-    public LoginController(ApplicationContext context) {
-        this.authService = context.getBean(AuthService.class);
+    @Autowired
+    public LoginController(AuthService authService, ApplicationContext applicationContext) {
+        this.authService = authService;
+        this.applicationContext = applicationContext;
     }
 
     @FXML
@@ -76,7 +81,30 @@ public class LoginController {
 
     @FXML
     private void switchToFacultyDashboard(ActionEvent event) {
-        switchDashboard(event, "/views/faculty_dashboard.fxml", "Faculty Dashboard");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/faculty_dashboard.fxml"));
+            Parent root = loader.load();
+
+            // Get the controller
+            FacultyDashboardController controller = loader.getController();
+
+            // Retrieve FacultyService from ApplicationContext
+            FacultyService facultyService = applicationContext.getBean(FacultyService.class);
+            controller.setFacultyService(facultyService);
+
+            // Pass logged-in faculty ID
+            controller.setLoggedInFacultyID(usernameField.getText());
+
+            // Switch scene
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Faculty Dashboard");
+            stage.show();
+        } catch (IOException e) {
+            errorLabel.setText("Error loading faculty dashboard.");
+            errorLabel.setStyle("-fx-text-fill: red;");
+            e.printStackTrace();
+        }
     }
 
     private void switchDashboard(ActionEvent event, String fxmlPath, String title) {
@@ -95,4 +123,3 @@ public class LoginController {
         }
     }
 }
-
