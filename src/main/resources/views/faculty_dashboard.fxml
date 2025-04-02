@@ -6,7 +6,7 @@
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.FacultyDashboardController"
            style="-fx-background-color: linear-gradient(to bottom, #ECEFF1, #CFD8DC);">
 
-    <VBox spacing="40" alignment="center" style="-fx-padding: 60;">
+    <VBox spacing="30" alignment="center" style="-fx-padding: 40;">
 
         <!-- Title -->
         <Label text="Welcome Faculty" 
@@ -77,6 +77,5 @@
                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
             "/>
         </HBox>
-        
     </VBox>
 </StackPane>
