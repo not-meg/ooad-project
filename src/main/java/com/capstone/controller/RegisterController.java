@@ -5,6 +5,9 @@ import com.capstone.service.TeamService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.collections.FXCollections;
+
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 //import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,7 +86,21 @@ public class RegisterController {
             return;
         }
 
-        showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "Your team has been registered.");
+        String teamID = "TEAM_" + srn1.getText(); // Generate a simple team ID
+        String facultyID = guideName.getText(); // Assuming faculty name is the faculty ID
+        String problemStatement = projectTitle.getText();
+        String password = passwordField.getText();
+
+        List<String> studentSRNs = List.of(srn1.getText(), srn2.getText(), srn3.getText(), srn4.getText());
+
+        // Call service method to register team
+        boolean success = teamService.registerTeam(teamID, problemStatement, facultyID, studentSRNs, password);
+
+        if (success) {
+            showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "Your team has been registered.");
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Registration Failed", "Please check the details and try again.");
+        }
     }
 
     private boolean validateFields() {

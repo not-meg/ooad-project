@@ -26,16 +26,33 @@ public class Team {
         this.password = password;
     }
 
-    public String getTeamID() { return teamID; }
-    public void setTeamID(String teamID) { this.teamID = teamID; }
+    public String getTeamID() {
+        return teamID;
+    }
 
-    public String getProblemStatement() { return problemStatement; }
-    public void setProblemStatement(String problemStatement) { this.problemStatement = problemStatement; }
+    public void setTeamID(String teamID) {
+        this.teamID = teamID;
+    }
 
-    public String getFacultyID() { return facultyID; }
-    public void setFacultyID(String facultyID) { this.facultyID = facultyID; }
+    public String getProblemStatement() {
+        return problemStatement;
+    }
 
-    public Set<String> getStudentIDs() { return studentIDs; }
+    public void setProblemStatement(String problemStatement) {
+        this.problemStatement = problemStatement;
+    }
+
+    public String getFacultyID() {
+        return facultyID;
+    }
+
+    public void setFacultyID(String facultyID) {
+        this.facultyID = facultyID;
+    }
+
+    public Set<String> getStudentIDs() {
+        return studentIDs;
+    }
 
     public boolean addMember(String studentID) {
         if (studentIDs.size() < 4) {
@@ -56,6 +73,11 @@ public class Team {
         return false;
     }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
