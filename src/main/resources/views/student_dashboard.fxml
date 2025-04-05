@@ -3,97 +3,126 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
+<?import javafx.animation.TranslateTransition?>
+<?import javafx.util.Duration?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.capstone.controller.DashboardController"
            style="-fx-background-color: linear-gradient(to bottom, #ECEFF1, #CFD8DC);">
-    
-    <VBox spacing="40" alignment="center" style="-fx-padding: 60;">
-        
-        <!-- Title -->
-        <Label text="Welcome to Capstone Project Management System" 
-               style="-fx-font-size: 28px; 
-                      -fx-font-weight: bold; 
-                      -fx-text-fill: #263238; 
-                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 2);"/>
 
-        <!-- Subtitle -->
-        <Label text="Manage capstone projects efficiently with smart tools and automation." 
-               wrapText="true" maxWidth="500"
-               style="-fx-font-size: 14px; 
-                      -fx-text-fill: #546e7a; 
-                      -fx-alignment: center;"/>
+    <BorderPane>
+        <top>
+            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 15; -fx-background-color: #263238;">
+                <Button fx:id="menuButton" text="☰" onAction="#toggleSidebar" style="
+                    -fx-background-color: transparent;
+                    -fx-text-fill: white;
+                    -fx-font-size: 24px;
+                    -fx-cursor: hand;"/>
+                <Label text="Capstone Dashboard" style="-fx-font-size: 18px; -fx-text-fill: white;"/>
+            </HBox>
+        </top>
         
-        <!-- Team Details Section -->
-        <VBox spacing="20" alignment="center" style="
-              -fx-background-color: white;
-              -fx-padding: 20;
-              -fx-background-radius: 8;
-              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);
-              -fx-min-width: 400px;
-              -fx-max-width: 600px;">
-            
-            <Label text="Your Team" style=" 
-                  -fx-font-size: 20px; 
-                  -fx-font-weight: bold; 
-                  -fx-text-fill: #37474F;"/>
-            
-            <GridPane hgap="20" vgap="10" alignment="center">
-                <columnConstraints>
-                    <ColumnConstraints minWidth="150" halignment="RIGHT"/>
-                    <ColumnConstraints minWidth="250" halignment="LEFT"/>
-                </columnConstraints>
-
-                <!-- Team ID -->
-                <Label text="Team ID:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                <Label fx:id="teamIDLabel" text="T12345" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <left>
+            <VBox fx:id="sidebar" spacing="20" alignment="TOP_LEFT" prefWidth="200" style="
+                  -fx-background-color: #37474F;
+                  -fx-padding: 20;
+                  -fx-pref-height: 100%;
+                  -fx-translate-x: -200;">
                 
-                <!-- Problem Statement -->
-                <Label text="Problem Statement:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                <Label fx:id="problemStatementLabel" text="Automated Grading System" wrapText="true" maxWidth="250"
-                    style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                <Label text="Home" fx:id="homeLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+                      
+                <Label text="Profile" fx:id="profileLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+                
+                <Label text="Notification" fx:id="notificationLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+                      
+                <Label text="Submission" fx:id="submissionLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
 
-                <!-- Faculty Mentor -->
-                <Label text="Faculty Mentor:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                <Label fx:id="facultyLabel" text="Dr. A. Sharma" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-            </GridPane>
-            
-        </VBox>
-        
-        <!-- Buttons -->
-        <HBox spacing="20" alignment="center">
-            <Button text="View Team" fx:id="viewTeamButton" onAction="#handleViewTeam" style="
-                -fx-background-color: #546e7a;
-                -fx-text-fill: white;
-                -fx-font-weight: bold;
-                -fx-font-size: 14px;
-                -fx-padding: 10 25;
-                -fx-cursor: hand;
-                -fx-background-radius: 3;
-                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
-            "/>
-            
-            <Button text="Log Out" fx:id="logoutButton" onAction="#handleLogout" style="
-                -fx-background-color: #D32F2F;
-                -fx-text-fill: white;
-                -fx-font-weight: bold;
-                -fx-font-size: 14px;
-                -fx-padding: 10 25;
-                -fx-cursor: hand;
-                -fx-background-radius: 3;
-                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
-            "/>
-            
-            <Button text="Submit Phase X Document" fx:id="submitPhaseXButton" onAction="#handleSubmitPhaseX" style="
-                -fx-background-color: #388E3C;
-                -fx-text-fill: white;
-                -fx-font-weight: bold;
-                -fx-font-size: 14px;
-                -fx-padding: 10 25;
-                -fx-cursor: hand;
-                -fx-background-radius: 3;
-                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
-            "/>
-        </HBox>
-        
-    </VBox>
+                <Label text="Team" fx:id="teamLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+
+                <Label text="Mentor Feedback" fx:id="feedbackLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+
+                <Label text="Results" fx:id="resultsLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+
+                <Label text="Review Schedule" fx:id="scheduleLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+
+                <Label text="Logout" fx:id="logoutLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+
+            </VBox>
+        </left>
+
+        <center>
+            <VBox spacing="40" alignment="center" style="-fx-padding: 60;">
+                <Label text="Welcome to Capstone Project Management System" 
+                       style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #263238;"/>
+                
+                <Label text="Manage capstone projects efficiently with smart tools and automation." 
+                       wrapText="true" maxWidth="500" style="-fx-font-size: 14px; -fx-text-fill: #546e7a;"/>
+                
+                <VBox spacing="20" alignment="center" style="
+                      -fx-background-color: white; -fx-padding: 20; -fx-background-radius: 8;
+                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 2);
+                      -fx-min-width: 400px; -fx-max-width: 600px;">
+                    <Label text="Your Team" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #37474F;"/>
+                    
+                    <GridPane hgap="20" vgap="10" alignment="center">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="150" halignment="RIGHT"/>
+                            <ColumnConstraints minWidth="250" halignment="LEFT"/>
+                        </columnConstraints>
+                        
+                        <Label text="Team ID:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <Label fx:id="teamIDLabel" text="T12345" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        
+                        <Label text="Problem Statement:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <Label fx:id="problemStatementLabel" text="Automated Grading System" wrapText="true" maxWidth="250"
+                            style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                        <Label text="Faculty Mentor:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <Label fx:id="facultyLabel" text="Dr. A. Sharma" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    </GridPane>
+                    
+                </VBox>
+                
+                <HBox spacing="20" alignment="center">
+                    <Button text="View Team" fx:id="viewTeamButton" onAction="#handleViewTeam" style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                    <Button text="Log Out" fx:id="logoutButton" onAction="#handleLogout" style="-fx-background-color: #D32F2F; -fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+        </center>
+    </BorderPane>
 </StackPane>

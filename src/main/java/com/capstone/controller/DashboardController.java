@@ -1,9 +1,16 @@
 package com.capstone.controller;
 
+import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.Node;
+import javafx.stage.Stage;
 import javafx.scene.control.Label;
 
 public class DashboardController {
@@ -11,8 +18,13 @@ public class DashboardController {
     @FXML private Label teamIDLabel;
     @FXML private Label problemStatementLabel;
     @FXML private Label facultyLabel;
-    @FXML private Button viewTeamButton;
-    @FXML private Button logoutButton;
+    @FXML private VBox sidebar;
+
+    @FXML private Label dashboardLink;
+    @FXML private Label profileLink;
+    @FXML private Label settingsLink;
+    
+    private boolean isSidebarOpen = false;
 
     // Placeholder team details (Replace with actual backend data later)
     private String teamID = "T12345";
@@ -21,31 +33,74 @@ public class DashboardController {
 
     @FXML
     public void initialize() {
-        // Set placeholders for team details
         teamIDLabel.setText(teamID);
         problemStatementLabel.setText(problemStatement);
         facultyLabel.setText(facultyName);
     }
 
     @FXML
-    private void handleViewTeam() {
-        System.out.println("View Team button clicked! (TODO: Implement navigation)");
-        // TODO: Navigate to the detailed team view page
+    private void handleNavigation(javafx.scene.input.MouseEvent event) {
+        Label clickedLabel = (Label) event.getSource();
+        String section = clickedLabel.getText();
+
+        switch (section) {
+            case "Home":
+                System.out.println("Navigating to Dashboard... (TODO: Implement navigation)");
+                break;
+            case "Profile":
+                System.out.println("Navigating to Profile... (TODO: Implement navigation)");
+                break;
+            case "Notification":
+                System.out.println("Navigating to Notification... (TODO: Implement navigation)");
+                break;
+            case "Submission":
+                System.out.println("Navigating to Submission... (TODO: Implement navigation)");
+                break;
+            case "Team":
+                System.out.println("Navigating to Team... (TODO: Implement navigation)");
+                break;
+            case "Mentor Feedback":
+                System.out.println("Navigating to Mentor Feedback... (TODO: Implement navigation)");
+                break;
+            case "Results":
+                System.out.println("Navigating to Results... (TODO: Implement navigation)");
+                break;
+            case "Review Schedule":
+                System.out.println("Navigating to Review Schedule... (TODO: Implement navigation)");
+                break;
+            case "Logout":
+                 System.out.println("Logging out");
+                 break;
+            default:
+                System.out.println("Unknown section clicked");
+                break;
+        }
     }
 
     @FXML
-    private void handleLogout() {
-        System.out.println("Logging out... (TODO: Implement logout)");
-        // TODO: Implement logout logic & redirect to login screen
+    private void handleViewTeam(ActionEvent event) {
+        System.out.println("View Team button clicked!");
+        // Implement navigation logic here (e.g., open a new window)
     }
 
     @FXML
-private void handleSubmitPhaseX(ActionEvent event) {
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("Submit Phase X Document");
-    alert.setHeaderText(null);
-    alert.setContentText("Feature to submit Phase X document is under development!");
-    alert.showAndWait();
-}
+    private void handleLogout(ActionEvent event) {
+        System.out.println("Logging out");
+        // Implement navigation logic here (e.g., open a new window)
+    }
 
+
+    @FXML
+    private void toggleSidebar(ActionEvent event) {
+        TranslateTransition transition = new TranslateTransition(Duration.millis(300), sidebar);
+
+        if (isSidebarOpen) {
+            transition.setToX(-200); // Move sidebar out
+        } else {
+            transition.setToX(0); // Move sidebar in
+        }
+
+        transition.play();
+        isSidebarOpen = !isSidebarOpen;
+    }
 }
