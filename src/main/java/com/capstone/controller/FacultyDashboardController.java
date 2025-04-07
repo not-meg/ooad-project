@@ -35,7 +35,6 @@ public class FacultyDashboardController {
     @FXML private Label resultsLink;
     @FXML private Label logoutLink;
 
-    @FXML private Button viewTeamsButton;
     @FXML private Button logoutButton;
 
     private boolean isSidebarOpen = false;
