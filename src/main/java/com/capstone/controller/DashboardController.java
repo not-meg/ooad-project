@@ -48,8 +48,18 @@ public class DashboardController {
                 System.out.println("Navigating to Notification... (TODO: Implement navigation)");
                 break;
             case "Submission":
-                System.out.println("Navigating to Submission... (TODO: Implement navigation)");
-                break;
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/submission.fxml"));
+        Parent submissionRoot = loader.load();
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setScene(new Scene(submissionRoot));
+        stage.show();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    break;
+
             case "Team":
                 System.out.println("Navigating to Team... (TODO: Implement navigation)");
                 break;
