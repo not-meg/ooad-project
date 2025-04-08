@@ -1,6 +1,10 @@
 package com.capstone.controller;
 
+import com.capstone.service.PhaseSubmissionService;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -14,6 +18,7 @@ public class SubmissionController {
     @FXML private Label statusLabel;
 
     private File selectedFile;
+    private final PhaseSubmissionService submissionService = new PhaseSubmissionService();
 
     @FXML
     public void initialize() {
@@ -43,9 +48,32 @@ public class SubmissionController {
             return;
         }
 
-        // TODO: Upload logic (backend connection / storage)
+        boolean success = submissionService.uploadSubmission(selectedPhase, selectedFile);
 
-        statusLabel.setText("Successfully uploaded for phase: " + selectedPhase);
-        statusLabel.setStyle("-fx-text-fill: green;");
+        if (success) {
+            statusLabel.setText("Successfully uploaded for phase: " + selectedPhase);
+            statusLabel.setStyle("-fx-text-fill: green;");
+        } else {
+            statusLabel.setText("Upload failed. Please try again.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+        }
     }
+
+    @FXML
+    private void goBack() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/student_dashboard.fxml"));
+            Parent root = loader.load();
+    
+            Stage currentStage = (Stage) statusLabel.getScene().getWindow();
+            currentStage.setScene(new Scene(root));
+            currentStage.setTitle("Student Dashboard");
+            currentStage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            statusLabel.setText("Failed to go back.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+        }
+    }
+    
 }
