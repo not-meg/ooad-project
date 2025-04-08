@@ -52,12 +52,6 @@
                       -fx-cursor: hand;
                       -fx-padding: 5;"/>
 
-                <Label text="Team" fx:id="teamLink" onMouseClicked="#handleNavigation" style="
-                      -fx-text-fill: white;
-                      -fx-font-size: 14px;
-                      -fx-cursor: hand;
-                      -fx-padding: 5;"/>
-
                 <Label text="Mentor Feedback" fx:id="feedbackLink" onMouseClicked="#handleNavigation" style="
                       -fx-text-fill: white;
                       -fx-font-size: 14px;

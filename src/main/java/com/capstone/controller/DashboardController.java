@@ -113,10 +113,7 @@ public class DashboardController {
         e.printStackTrace();
     }
     break;
-
-            case "Team":
-                System.out.println("Navigating to Team... (TODO: Implement navigation)");
-                break;
+    
             case "Mentor Feedback":
                 System.out.println("Navigating to Mentor Feedback... (TODO: Implement navigation)");
                 break;
