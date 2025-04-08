@@ -89,10 +89,14 @@
                         </columnConstraints>
                         
                         <Label text="Name:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <Label fx:id="facultyNameLabel" text="Dr. A. Sharma" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                        <Label fx:id="facultyNameLabel" text="Loading..." style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
                         
                         <Label text="Department:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <Label fx:id="departmentLabel" text="CSE" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label fx:id="departmentLabel" text="Loading..." style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        
+                        <Label text="Designation:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <Label fx:id="designationLabel" text="Loading..." style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
                     </GridPane>
                 </VBox>
 

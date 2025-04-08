@@ -102,18 +102,18 @@ public class DashboardController {
                 System.out.println("Navigating to Notification... (TODO: Implement navigation)");
                 break;
             case "Submission":
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/submission.fxml"));
-        Parent submissionRoot = loader.load();
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/submission.fxml"));
+                    Parent submissionRoot = loader.load();
 
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(submissionRoot));
-        stage.show();
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    break;
-    
+                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                    stage.setScene(new Scene(submissionRoot));
+                    stage.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+
             case "Mentor Feedback":
                 System.out.println("Navigating to Mentor Feedback... (TODO: Implement navigation)");
                 break;
@@ -178,7 +178,6 @@ public class DashboardController {
         System.out.println("Logging out");
         // Implement navigation logic here (e.g., open a new window)
     }
-
 
     @FXML
     private void toggleSidebar(ActionEvent event) {

@@ -27,6 +27,7 @@ public class FacultyDashboardController {
 
     @FXML private Label facultyNameLabel;
     @FXML private Label departmentLabel;
+    @FXML private Label designationLabel;
 
     @FXML private Label homeLink;
     @FXML private Label teamsLink;
@@ -68,9 +69,11 @@ public class FacultyDashboardController {
         if (faculty != null) {
             facultyNameLabel.setText(faculty.getName());
             departmentLabel.setText(faculty.getDepartment());
+            designationLabel.setText(faculty.getDesignation());
         } else {
             facultyNameLabel.setText("Unknown");
             departmentLabel.setText("Unknown");
+            designationLabel.setText("Unknown");
         }
     }
 
