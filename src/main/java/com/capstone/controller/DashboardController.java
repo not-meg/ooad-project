@@ -93,7 +93,17 @@ public class DashboardController {
 
         switch (section) {
             case "Home":
-                System.out.println("Navigating to Dashboard... (TODO: Implement navigation)");
+                try {
+                    // Reload the dashboard view
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/student_dashboard.fxml"));
+                    Parent dashboardRoot = loader.load();
+
+                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                    stage.setScene(new Scene(dashboardRoot));
+                    stage.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             case "Profile":
                 System.out.println("Navigating to Profile... (TODO: Implement navigation)");
@@ -102,17 +112,17 @@ public class DashboardController {
                 System.out.println("Navigating to Notification... (TODO: Implement navigation)");
                 break;
             case "Submission":
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/submission.fxml"));
-        Parent submissionRoot = loader.load();
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/submission.fxml"));
+                    Parent submissionRoot = loader.load();
 
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(new Scene(submissionRoot));
-        stage.show();
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    break;
+                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                    stage.setScene(new Scene(submissionRoot));
+                    stage.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
 
             case "Team":
                 System.out.println("Navigating to Team... (TODO: Implement navigation)");
