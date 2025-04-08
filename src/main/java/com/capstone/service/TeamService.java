@@ -108,5 +108,15 @@ public class TeamService {
         Optional<Team> teamOpt = teamRepository.findById(teamID);
         return teamOpt.isPresent() && teamOpt.get().getPassword().equals(enteredPassword);
     }
+
+    public Optional<Team> getTeamByID(String teamID) {
+        return teamRepository.findById(teamID);
+    }
+
+    public Optional<Team> getTeamByStudentID(String studentID) {
+        return teamRepository.findByStudentIDsContaining(studentID);
+    }
+    
+    
     
 }

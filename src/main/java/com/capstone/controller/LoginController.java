@@ -2,6 +2,8 @@ package com.capstone.controller;
 
 import com.capstone.service.AuthService;
 import com.capstone.service.FacultyService; // Import FacultyService
+import com.capstone.service.TeamService;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -76,8 +78,33 @@ public class LoginController {
 
     @FXML
     private void switchToStudentDashboard(ActionEvent event) {
-        switchDashboard(event, "/views/student_dashboard.fxml", "Student Dashboard");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/student_dashboard.fxml"));
+            Parent root = loader.load();
+
+            // Get the controller
+            DashboardController controller = loader.getController();
+
+            // Retrieve TeamService from ApplicationContext
+            TeamService teamService = applicationContext.getBean(TeamService.class);
+            controller.setTeamService(teamService);
+
+            // Pass logged-in student ID
+            controller.setLoggedInStudentID(usernameField.getText());
+
+            // Switch scene
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Student Dashboard");
+            stage.show();
+
+        } catch (IOException e) {
+            errorLabel.setText("Error loading student dashboard.");
+            errorLabel.setStyle("-fx-text-fill: red;");
+            e.printStackTrace();
+        }
     }
+
 
     @FXML
     private void switchToFacultyDashboard(ActionEvent event) {
