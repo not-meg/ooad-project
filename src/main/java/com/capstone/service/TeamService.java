@@ -21,7 +21,7 @@ public class TeamService {
     private TeamRepository teamRepository;
 
     @Autowired
-    private UserRepository userRepository;  // To validate students and faculty
+    private UserRepository userRepository; // To validate students and faculty
 
     // ✅ Fetch Student by SRN (_id)
     public Student getStudentBySRN(String srn) {
@@ -29,7 +29,7 @@ public class TeamService {
         if (userOpt.isPresent() && userOpt.get() instanceof Student) {
             return (Student) userOpt.get();
         }
-        return null;  // Return null if not found or not a student
+        return null; // Return null if not found or not a student
     }
 
     // ✅ NEW: Check if any student is already in another team
@@ -45,7 +45,8 @@ public class TeamService {
         return false; // All students are available
     }
 
-    public boolean registerTeam(String teamID, String problemStatement, String facultyID, List<String> studentIDs, String password) {
+    public boolean registerTeam(String teamID, String problemStatement, String facultyID, List<String> studentIDs,
+            String password) {
         if (studentIDs.size() != 4) {
             System.out.println("❌ Team must have exactly 4 unique students.");
             return false;
@@ -84,10 +85,27 @@ public class TeamService {
 
         // Ensure faculty’s department matches at least one student’s department
         boolean departmentMatch = students.stream()
-                                          .anyMatch(student -> student.getDepartment().equals(faculty.getDepartment()));
+                .anyMatch(student -> faculty.getDepartment().equals(student.getDepartment()));
 
         if (!departmentMatch) {
             System.out.println("❌ Faculty's department does not match any student's department.");
+            return false;
+        }
+        // ✅ Check how many teams the faculty is already mentoring
+        long teamsMentored = teamRepository.findAll().stream()
+                .filter(t -> t.getFacultyID().equals(faculty.getUserID()))
+                .count();
+
+        int maxTeamsAllowed = switch (faculty.getDesignation().toLowerCase()) {
+            case "professor" -> 7;
+            case "associate professor" -> 5;
+            case "assistant professor" -> 3;
+            default -> 0;
+        };
+
+        if (teamsMentored >= maxTeamsAllowed) {
+            System.out.println("❌ " + faculty.getDesignation() + " can mentor only up to " + maxTeamsAllowed
+                    + " teams. Limit reached.");
             return false;
         }
 
@@ -116,7 +134,5 @@ public class TeamService {
     public Optional<Team> getTeamByStudentID(String studentID) {
         return teamRepository.findByStudentIDsContaining(studentID);
     }
-    
-    
-    
+
 }
