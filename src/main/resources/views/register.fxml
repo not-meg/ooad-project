@@ -54,7 +54,7 @@
         <!-- Project Details -->
         <VBox spacing="10">
             <Label text="Project Details" style="-fx-font-weight: bold; -fx-text-fill: #37474f;"/>
-            <TextField fx:id="guideName" promptText="Faculty Guide Name" style="-fx-pref-width: 400;"/>
+            <TextField fx:id="guideName" promptText="Faculty Guide ID" style="-fx-pref-width: 400;"/>
             <TextField fx:id="projectTitle" promptText="Project Title" style="-fx-pref-width: 400;"/>
             <ComboBox fx:id="projectDomain" promptText="Select Project Domain" style="-fx-pref-width: 400;"/>
         </VBox>
