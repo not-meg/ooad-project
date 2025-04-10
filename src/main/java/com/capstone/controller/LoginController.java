@@ -49,21 +49,24 @@ public class LoginController {
         String userID = usernameField.getText();
         String teamID = teamIDField.getText();
         String password = passwordField.getText();
-
+    
         if (userID.isBlank() || password.isBlank()) {
             errorLabel.setText("User ID and Password are required.");
             errorLabel.setStyle("-fx-text-fill: red;");
             return;
         }
-
+    
         String authResult = authService.authenticateUser(userID, teamID, password);
-
+    
         switch (authResult) {
             case "STUDENT":
                 switchToStudentDashboard(event);
                 break;
             case "FACULTY":
                 switchToFacultyDashboard(event);
+                break;
+            case "ADMIN":
+                switchToAdminDashboard(event);
                 break;
             case "MISSING_TEAM":
                 errorLabel.setText("Team ID is required for students.");
@@ -134,17 +137,23 @@ public class LoginController {
         }
     }
 
-    private void switchDashboard(ActionEvent event, String fxmlPath, String title) {
+    @FXML
+    private void switchToAdminDashboard(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/admin_dashboard.fxml"));
             Parent root = loader.load();
+
+            // Get the controller if needed for setting Admin ID or services
+            AdminDashboardController controller = loader.getController();
+            controller.setLoggedInAdminID(usernameField.getText()); // Assuming method exists
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle(title);
+            stage.setTitle("Admin Dashboard");
             stage.show();
+
         } catch (IOException e) {
-            errorLabel.setText("Error loading dashboard.");
+            errorLabel.setText("Error loading admin dashboard.");
             errorLabel.setStyle("-fx-text-fill: red;");
             e.printStackTrace();
         }
