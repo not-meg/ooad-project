@@ -9,15 +9,18 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.springframework.stereotype.Controller;
 
+import com.capstone.service.AdminService;
+
 @Controller
 public class AdminDashboardController {
 
     @FXML private VBox sidebar;
     @FXML private Button menuButton;
 
+    @FXML private Label adminIDLabel;
     @FXML private Label adminNameLabel;
-    @FXML private Label roleLabel;
-
+    @FXML private Label adminEmailLabel;
+    
     @FXML private Label homeLink;
     @FXML private Label usersLink;
     @FXML private Label reviewScheduleLink;
@@ -31,10 +34,17 @@ public class AdminDashboardController {
 
     public AdminDashboardController() {}
 
-    public void setLoggedInAdminID(String adminID) {
-        this.loggedInAdminID = adminID;
-        loadAdminDetails();
+    private AdminService adminService;
+
+    public void setAdminService(AdminService adminService) {
+        this.adminService = adminService;
     }
+
+public void setLoggedInAdminID(String adminID) {
+    this.loggedInAdminID = adminID;
+    loadAdminDetails();
+}
+
 
     @FXML
     public void initialize() {
@@ -42,16 +52,27 @@ public class AdminDashboardController {
     }
 
     private void loadAdminDetails() {
-        // Placeholder: In future, connect with AdminService to fetch details
+        if (adminService == null) {
+            System.out.println("Error: adminService is null!");
+            return;
+        }
+    
         if (loggedInAdminID == null) {
             System.out.println("Error: loggedInAdminID is null!");
             return;
         }
-
-        // Dummy placeholder data
-        adminNameLabel.setText("Admin " + loggedInAdminID);
-        roleLabel.setText("System Administrator");
+    
+        adminService.getAdminById(loggedInAdminID).ifPresentOrElse(admin -> {
+            adminIDLabel.setText(admin.getUserID());
+            adminNameLabel.setText(admin.getName());
+            adminEmailLabel.setText(admin.getEmail());
+        }, () -> {
+            adminIDLabel.setText("Unknown");
+            adminNameLabel.setText("Unknown");
+            adminEmailLabel.setText("Unknown");
+        });
     }
+    
 
     @FXML
     private void toggleSidebar() {

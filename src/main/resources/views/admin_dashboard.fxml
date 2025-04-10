@@ -87,15 +87,21 @@
                             <ColumnConstraints minWidth="150" halignment="RIGHT"/>
                             <ColumnConstraints minWidth="250" halignment="LEFT"/>
                         </columnConstraints>
-                        
-                        <Label text="Name:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <Label fx:id="adminNameLabel" text="Loading..." style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                        
-                        <Label text="Role:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <Label fx:id="roleLabel" text="System Administrator" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                        <Label text="System Status:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <Label fx:id="systemStatusLabel" text="All Systems Operational" style="-fx-text-fill: #43A047;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                        <Label text="Admin ID:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <Label fx:id="adminIDLabel" text="Loading..." style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                        <Label text="Name:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <Label fx:id="adminNameLabel" text="Loading..." style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                        <Label text="Email:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <Label fx:id="adminEmailLabel" text="Loading..." style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                        <Label text="Role:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                        <Label fx:id="roleLabel" text="System Administrator" style="-fx-text-fill: #37474F;" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                        <Label text="System Status:" style="-fx-font-weight: bold; -fx-text-fill: #546e7a;" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                        <Label fx:id="systemStatusLabel" text="All Systems Operational" style="-fx-text-fill: #43A047;" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
                     </GridPane>
                 </VBox>
 

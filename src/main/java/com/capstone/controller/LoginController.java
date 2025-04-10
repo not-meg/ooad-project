@@ -3,6 +3,7 @@ package com.capstone.controller;
 import com.capstone.service.AuthService;
 import com.capstone.service.FacultyService; // Import FacultyService
 import com.capstone.service.TeamService;
+import com.capstone.service.AdminService;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -145,6 +146,8 @@ public class LoginController {
 
             // Get the controller if needed for setting Admin ID or services
             AdminDashboardController controller = loader.getController();
+            AdminService adminService = applicationContext.getBean(AdminService.class);
+            controller.setAdminService(adminService);
             controller.setLoggedInAdminID(usernameField.getText()); // Assuming method exists
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
