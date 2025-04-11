@@ -86,7 +86,6 @@ public class AdminDashboardController {
         });
     }
     
-
     @FXML
     private void toggleSidebar() {
         TranslateTransition transition = new TranslateTransition(Duration.millis(300), sidebar);
@@ -120,12 +119,16 @@ public class AdminDashboardController {
                 handleManageUsers();
                 break;
 
-            case "reviewScheduleLink":
-                System.out.println("Navigating to Review Schedule...");
+            case "teamsLink":
+                System.out.println("Navigating to View Teams...");
                 break;
 
-            case "resultsLink":
-                System.out.println("Navigating to Results...");
+            case "submissionsLink":
+                System.out.println("Navigating to Submissions...");
+                break;
+
+            case "analyticsLink":
+                System.out.println("Navigating to Analytics...");
                 break;
 
             case "logoutLink":
@@ -136,7 +139,7 @@ public class AdminDashboardController {
                 System.out.println("Unknown section clicked");
         }
     }
-    
+
     @FXML
     private void handleManageUsers() {
         System.out.println("Opening Manage Users section...");
@@ -245,8 +248,6 @@ public class AdminDashboardController {
         return tableView;
     }
     
-
-
     @FXML
     private void handleLogout() {
         System.out.println("Logging out... (TODO)");
