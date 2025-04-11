@@ -135,4 +135,8 @@ public class TeamService {
         return teamRepository.findByStudentIDsContaining(studentID);
     }
 
+    public List<Team> getAllTeams() {
+        return teamRepository.findAll();
+    }
+    
 }

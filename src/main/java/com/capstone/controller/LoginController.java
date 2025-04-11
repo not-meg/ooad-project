@@ -147,7 +147,9 @@ public class LoginController {
             // Get the controller if needed for setting Admin ID or services
             AdminDashboardController controller = loader.getController();
             AdminService adminService = applicationContext.getBean(AdminService.class);
+            TeamService teamService = applicationContext.getBean(TeamService.class);
             controller.setAdminService(adminService);
+            controller.setTeamService(teamService);
             controller.setLoggedInAdminID(usernameField.getText()); // Assuming method exists
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

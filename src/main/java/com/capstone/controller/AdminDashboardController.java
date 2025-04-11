@@ -10,20 +10,23 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import java.util.List;
+import java.util.Set;
+import javafx.scene.control.TableCell;
+import javafx.scene.text.Text;
 
 import org.springframework.stereotype.Controller;
 import com.capstone.service.AdminService;
+import com.capstone.service.TeamService;
 import com.capstone.model.Faculty;
 import com.capstone.model.Student;
+import com.capstone.model.Team;
 import com.capstone.model.Admin;
-import com.capstone.model.User;
 
 @Controller
 public class AdminDashboardController {
@@ -49,9 +52,14 @@ public class AdminDashboardController {
     public AdminDashboardController() {}
 
     private AdminService adminService;
+    private TeamService teamService;
 
     public void setAdminService(AdminService adminService) {
         this.adminService = adminService;
+    }
+
+    public void setTeamService(TeamService teamService) {
+        this.teamService = teamService;
     }
 
     public void setLoggedInAdminID(String adminID) {
@@ -121,6 +129,7 @@ public class AdminDashboardController {
 
             case "teamsLink":
                 System.out.println("Navigating to View Teams...");
+                handleViewTeams();
                 break;
 
             case "submissionsLink":
@@ -247,6 +256,79 @@ public class AdminDashboardController {
         tableView.getColumns().addAll(idColumn, nameColumn, emailColumn);
         return tableView;
     }
+
+    @FXML
+    private void handleViewTeams() {
+        if (teamService == null) {
+            System.out.println("Error: teamService is not set!");
+            return;
+        }
+    
+        Stage popupStage = new Stage();
+        popupStage.setTitle("Teams");
+    
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
+    
+        TableView<Team> teamTable = new TableView<>();
+    
+        // Define columns
+        TableColumn<Team, String> teamIdColumn = new TableColumn<>("Team ID");
+        teamIdColumn.setCellValueFactory(new PropertyValueFactory<>("teamID"));
+        teamIdColumn.setPrefWidth(150);
+    
+        TableColumn<Team, String> problemStatementColumn = new TableColumn<>("Problem Statement");
+        problemStatementColumn.setCellValueFactory(new PropertyValueFactory<>("problemStatement"));
+        problemStatementColumn.setPrefWidth(300);
+    
+        TableColumn<Team, String> facultyIdColumn = new TableColumn<>("Faculty ID");
+        facultyIdColumn.setCellValueFactory(new PropertyValueFactory<>("facultyID"));
+        facultyIdColumn.setPrefWidth(100);
+    
+        TableColumn<Team, String> studentIdsColumn = new TableColumn<>("Student IDs");
+        studentIdsColumn.setCellValueFactory(cellData -> {
+            Set<String> studentIDs = cellData.getValue().getStudentIDs();
+            String joinedStudentIDs = String.join("\n", studentIDs); // Use newlines
+            return new javafx.beans.property.SimpleStringProperty(joinedStudentIDs);
+        });
+        studentIdsColumn.setPrefWidth(200);
+    
+        // Custom cell to support multiline student IDs
+        studentIdsColumn.setCellFactory(column -> {
+            return new TableCell<Team, String>() {
+                private final Text text = new Text();
+    
+                {
+                    text.wrappingWidthProperty().bind(studentIdsColumn.widthProperty().subtract(10)); // Allow wrapping
+                    setGraphic(text);
+                }
+    
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        text.setText(null);
+                    } else {
+                        text.setText(item);
+                    }
+                }
+            };
+        });
+    
+        // Add columns to the table
+        teamTable.getColumns().addAll(teamIdColumn, problemStatementColumn, facultyIdColumn, studentIdsColumn);
+    
+        // Fetch teams from service
+        List<Team> teams = teamService.getAllTeams();
+        teamTable.getItems().addAll(teams);
+    
+        root.getChildren().add(teamTable);
+    
+        Scene scene = new Scene(new ScrollPane(root), 850, 600); // Wider window
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
+    
     
     @FXML
     private void handleLogout() {
