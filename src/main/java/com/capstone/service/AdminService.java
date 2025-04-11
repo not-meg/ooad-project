@@ -6,6 +6,7 @@ import com.capstone.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,6 +21,10 @@ public class AdminService {
             return Optional.of((Admin) userOpt.get());
         }
         return Optional.empty();
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     // Add more admin-related logic here later if needed

@@ -2,14 +2,24 @@ package com.capstone.controller;
 
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.springframework.stereotype.Controller;
 
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
 import com.capstone.service.AdminService;
+import com.capstone.model.User;
 
 @Controller
 public class AdminDashboardController {
@@ -40,11 +50,10 @@ public class AdminDashboardController {
         this.adminService = adminService;
     }
 
-public void setLoggedInAdminID(String adminID) {
-    this.loggedInAdminID = adminID;
-    loadAdminDetails();
-}
-
+    public void setLoggedInAdminID(String adminID) {
+        this.loggedInAdminID = adminID;
+        loadAdminDetails();
+    }
 
     @FXML
     public void initialize() {
@@ -91,33 +100,80 @@ public void setLoggedInAdminID(String adminID) {
     @FXML
     private void handleNavigation(MouseEvent event) {
         Label clickedLabel = (Label) event.getSource();
-        String section = clickedLabel.getText();
+        String id = clickedLabel.getId();
 
-        switch (section) {
-            case "Home":
-                System.out.println("Navigating to Admin Dashboard... (TODO)");
+        if (id == null) {
+            return;
+        }
+
+        switch (id) {
+            case "homeLink":
+                System.out.println("Navigating to Home...");
                 break;
-            case "Manage Users":
+
+            case "usersLink":
+                System.out.println("Opening Manage Users popup...");
                 handleManageUsers();
                 break;
-            case "Review Schedule":
-                System.out.println("Navigating to Review Schedule... (TODO)");
+
+            case "reviewScheduleLink":
+                System.out.println("Navigating to Review Schedule...");
                 break;
-            case "Results":
-                System.out.println("Navigating to Results... (TODO)");
+
+            case "resultsLink":
+                System.out.println("Navigating to Results...");
                 break;
-            case "Logout":
-                handleLogout();
+
+            case "logoutLink":
+                System.out.println("Logging out...");
+                // Optionally call a logout handler here
                 break;
             default:
-                System.out.println("Unknown section clicked: " + section);
+                System.out.println("Unknown section clicked");
         }
     }
 
     @FXML
     private void handleManageUsers() {
-        // TODO: Implement user management UI
-        System.out.println("Opening Manage Users section... (TODO)");
+        System.out.println("Opening Manage Users section...");
+
+        if (adminService == null) {
+            System.out.println("Error: adminService is not set!");
+            return;
+        }
+
+        // Create a new Stage (popup window)
+        Stage popupStage = new Stage();
+        popupStage.setTitle("Manage Users");
+
+        // Create a TableView to display users
+        TableView<User> tableView = new TableView<>();
+
+        // Define columns
+        TableColumn<User, String> idColumn = new TableColumn<>("User ID");
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
+
+        TableColumn<User, String> nameColumn = new TableColumn<>("Name");
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<User, String> emailColumn = new TableColumn<>("Email");
+        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+
+        tableView.getColumns().addAll(idColumn, nameColumn, emailColumn);
+
+        // Fetch users and set into TableView
+        List<User> users = adminService.getAllUsers();
+        tableView.getItems().addAll(users);
+
+        // Layout
+        VBox vbox = new VBox(tableView);
+        vbox.setPadding(new Insets(10));
+
+        // Scene and show
+        Scene scene = new Scene(vbox, 600, 400);
+        popupStage.setScene(scene);
+        popupStage.initModality(Modality.APPLICATION_MODAL); // Block interaction with main window
+        popupStage.showAndWait();
     }
 
     @FXML
