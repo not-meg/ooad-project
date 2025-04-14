@@ -5,6 +5,7 @@
 <?import javafx.scene.text.*?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.capstone.controller.LoginController"
            style="-fx-background-color: linear-gradient(to bottom, #eceff1, #cfd8dc);">
     
     <VBox spacing="25" alignment="center" style="-fx-padding: 50;">

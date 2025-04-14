@@ -25,13 +25,22 @@ import java.io.IOException;
 @Controller
 public class LoginController {
 
-    private final AuthService authService;
-    private final ApplicationContext applicationContext; // Spring context to fetch beans
+    private AuthService authService;
+    private ApplicationContext context;
 
-    @Autowired
-    public LoginController(AuthService authService, ApplicationContext applicationContext) {
+    // Spring context to fetch beans
+
+    public LoginController() {
+        this.authService = null;
+        this.context = null;
+    }
+
+    public void setAuthService(AuthService authService) {
         this.authService = authService;
-        this.applicationContext = applicationContext;
+    }
+
+    public void setApplicationContext(ApplicationContext context) {
+        this.context = context;
     }
 
     @FXML
@@ -51,15 +60,15 @@ public class LoginController {
         String userID = usernameField.getText();
         String teamID = teamIDField.getText();
         String password = passwordField.getText();
-    
+
         if (userID.isBlank() || password.isBlank()) {
             errorLabel.setText("User ID and Password are required.");
             errorLabel.setStyle("-fx-text-fill: red;");
             return;
         }
-    
+
         String authResult = authService.authenticateUser(userID, teamID, password);
-    
+
         switch (authResult) {
             case "STUDENT":
                 switchToStudentDashboard(event);
@@ -91,9 +100,10 @@ public class LoginController {
             DashboardController controller = loader.getController();
 
             // Retrieve TeamService from ApplicationContext
-            TeamService teamService = applicationContext.getBean(TeamService.class);
-            PhaseSubmissionService submissionService = applicationContext.getBean(PhaseSubmissionService.class);
+            TeamService teamService = context.getBean(TeamService.class);
             controller.setTeamService(teamService);
+            PhaseSubmissionService submissionService = context.getBean(PhaseSubmissionService.class);
+
             controller.setSubmissionService(submissionService);
 
             // Pass logged-in student ID
@@ -112,7 +122,6 @@ public class LoginController {
         }
     }
 
-
     @FXML
     private void switchToFacultyDashboard(ActionEvent event) {
         try {
@@ -123,7 +132,7 @@ public class LoginController {
             FacultyDashboardController controller = loader.getController();
 
             // Retrieve FacultyService from ApplicationContext
-            FacultyService facultyService = applicationContext.getBean(FacultyService.class);
+            FacultyService facultyService = context.getBean(FacultyService.class);
             controller.setFacultyService(facultyService);
 
             // Pass logged-in faculty ID
@@ -149,8 +158,8 @@ public class LoginController {
 
             // Get the controller if needed for setting Admin ID or services
             AdminDashboardController controller = loader.getController();
-            AdminService adminService = applicationContext.getBean(AdminService.class);
-            TeamService teamService = applicationContext.getBean(TeamService.class);
+            AdminService adminService = context.getBean(AdminService.class);
+            TeamService teamService = context.getBean(TeamService.class);
             controller.setAdminService(adminService);
             controller.setTeamService(teamService);
             controller.setLoggedInAdminID(usernameField.getText()); // Assuming method exists

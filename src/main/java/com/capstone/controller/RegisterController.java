@@ -1,24 +1,40 @@
 package com.capstone.controller;
 
 import com.capstone.model.Student;
+import com.capstone.service.AuthService;
 import com.capstone.service.TeamService;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.collections.FXCollections;
+import com.capstone.util.SpringFXMLLoader;
 
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+
+import java.io.IOException;
 import java.util.List;
+import javafx.scene.Node;
+import org.springframework.context.ApplicationContext;
 
 import org.springframework.stereotype.Component;
 //import org.springframework.beans.factory.annotation.Autowired;
 
 @Component // Marks this class as a Spring-managed component
 public class RegisterController {
+    private final ApplicationContext context;
 
-    private final TeamService teamService; // Dependency Injection
+    private final TeamService teamService;
+    @FXML
+    private Button BackTologinButton;
+    // Dependency Injection
 
     // Constructor-based Dependency Injection
     // @Autowired
-    public RegisterController(TeamService teamService) {
+    public RegisterController(ApplicationContext context, TeamService teamService) {
+        this.context = context;
         this.teamService = teamService;
     }
 
@@ -111,7 +127,7 @@ public class RegisterController {
         }
 
         if (guideName.getText().isEmpty() || projectTitle.getText().isEmpty() || projectDomain.getValue() == null) {
-            showAlert(Alert.AlertType.ERROR, "Registration Error", "Please complete all project details.");
+            showAlert(Alert.AlertType.ERROR, "Registration Error", "Please completegit  all project details.");
             return false;
         }
 
@@ -135,4 +151,30 @@ public class RegisterController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    @FXML
+    public void handleGoBackToLogin() {
+        try {
+            // Load the FXML for login screen
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/login.fxml"));
+            Parent root = loader.load();
+
+            // Get the controller and inject dependencies
+            LoginController controller = loader.getController();
+
+            // Manually inject Spring dependencies
+            controller.setAuthService(context.getBean(AuthService.class));
+            controller.setApplicationContext(context); // ✅ inject Spring context
+
+            // Set the new scene with the login screen
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) BackTologinButton.getScene().getWindow();
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exceptions accordingly
+        }
+    }
+
 }

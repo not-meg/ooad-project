@@ -2,6 +2,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.text.*?>
+
+
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            style="-fx-background-color: linear-gradient(to bottom, #eceff1, #cfd8dc);">
@@ -77,5 +82,12 @@
             -fx-background-radius: 3;
             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);
         "/>
+        <!-- Go Back to Login Button -->
+       <Button fx:id="BackTologinButton" text="← Back to Login" onAction="#handleGoBackToLogin"
+        style="-fx-background-color: transparent;
+               -fx-text-fill: #37474f;
+               -fx-font-size: 12px;
+               -fx-underline: true;
+               -fx-cursor: hand;"/>
     </VBox>
 </StackPane>

@@ -26,15 +26,22 @@ import java.io.File;
 
 public class DashboardController {
 
-    @FXML private Label teamIDLabel;
-    @FXML private Label problemStatementLabel;
-    @FXML private Label facultyLabel;
-    @FXML private VBox sidebar;
+    @FXML
+    private Label teamIDLabel;
+    @FXML
+    private Label problemStatementLabel;
+    @FXML
+    private Label facultyLabel;
+    @FXML
+    private VBox sidebar;
 
-    @FXML private Label dashboardLink;
-    @FXML private Label profileLink;
-    @FXML private Label settingsLink;
-    
+    @FXML
+    private Label dashboardLink;
+    @FXML
+    private Label profileLink;
+    @FXML
+    private Label settingsLink;
+
     private boolean isSidebarOpen = false;
 
     // Placeholder team details (Replace with actual backend data later)
@@ -43,11 +50,14 @@ public class DashboardController {
     private String facultyName;
 
     private TeamService teamService;
-    public DashboardController() {}
+
+    public DashboardController() {
+    }
 
     public void setTeamService(TeamService teamService) {
         this.teamService = teamService;
     }
+
     private PhaseSubmissionService submissionService;
 
     public void setSubmissionService(PhaseSubmissionService submissionService) {
@@ -68,7 +78,7 @@ public class DashboardController {
         problemStatementLabel.setText(problemStatement);
         facultyLabel.setText(facultyName);
 
-        //onDownloadButtonClick("1LEPejTJ8WtSiC-Jj-6iROg7Jk7VccL-g");
+        // onDownloadButtonClick("1LEPejTJ8WtSiC-Jj-6iROg7Jk7VccL-g");
     }
 
     private void loadTeamDetails() {
@@ -76,14 +86,14 @@ public class DashboardController {
             System.out.println("❌ TeamService is null");
             return;
         }
-    
+
         if (loggedInStudentID == null) {
             System.out.println("❌ loggedInStudentID is null");
             return;
         }
 
         System.out.println("Trying to fetch team for student: " + loggedInStudentID);
-    
+
         Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
         if (teamOpt.isPresent()) {
             Team team = teamOpt.get();
@@ -127,8 +137,8 @@ public class DashboardController {
                 System.out.println("Navigating to Review Schedule... (TODO: Implement navigation)");
                 break;
             case "Logout":
-                 System.out.println("Logging out");
-                 break;
+                System.out.println("Logging out");
+                break;
             default:
                 System.out.println("Unknown section clicked");
                 break;
@@ -251,10 +261,9 @@ public class DashboardController {
         if (fileId != null) {
             // File uploaded successfully, now save the submission in MongoDB
             PhaseSubmission phaseSubmission = new PhaseSubmission(
-                "T001", // Replace with actual team ID
-                mapPhaseToInt(selectedPhase),
-                fileId
-            );
+                    "T001", // Replace with actual team ID
+                    mapPhaseToInt(selectedPhase),
+                    fileId);
 
             // Save the submission to the database using PhaseSubmissionService
             boolean dbSuccess = submissionService.saveSubmission(phaseSubmission);
@@ -286,11 +295,11 @@ public class DashboardController {
                 return 0;
         }
     }
-    
+
     @FXML
     public void onDownloadButtonClick(String fileId) {
         String directoryPath = "downloaded_files";
-    
+
         File directory = new File(directoryPath);
         if (!directory.exists()) {
             if (directory.mkdirs()) {
@@ -300,14 +309,13 @@ public class DashboardController {
                 return;
             }
         }
-    
+
         String destinationPath = directoryPath + "/" + fileId + ".pdf";
         DriveUploader.retrieveFile(fileId, destinationPath);
-    
+
         showAlert("✅ Success", "File downloaded successfully.");
     }
 
-    
     @FXML
     private void handleLogout(ActionEvent event) {
         System.out.println("Logging out");
@@ -328,7 +336,7 @@ public class DashboardController {
         isSidebarOpen = !isSidebarOpen;
     }
 
-        private void showAlert(String title, String message) {
+    private void showAlert(String title, String message) {
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
