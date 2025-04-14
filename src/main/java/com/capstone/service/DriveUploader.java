@@ -30,7 +30,7 @@ public class DriveUploader {
     private static final String CREDENTIALS_FILE_PATH = "src/main/resources/credentials.json";
 
     // 🔒 Scope defines what kind of access you want — this one is "upload only"
-    private static final java.util.List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE_FILE);
+    private static final java.util.List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
 
     /**
      * Loads credentials from credentials.json and initializes Google Drive API client

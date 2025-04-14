@@ -14,20 +14,15 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.Parent;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.scene.Node;
 import java.util.Optional;
 import java.io.File;
-
 
 public class DashboardController {
 
@@ -73,7 +68,7 @@ public class DashboardController {
         problemStatementLabel.setText(problemStatement);
         facultyLabel.setText(facultyName);
 
-        onDownloadButtonClick("1LEPejTJ8WtSiC-Jj-6iROg7Jk7VccL-g");
+        //onDownloadButtonClick("1LEPejTJ8WtSiC-Jj-6iROg7Jk7VccL-g");
     }
 
     private void loadTeamDetails() {
@@ -183,39 +178,50 @@ public class DashboardController {
 
     @FXML
     private void handleSubmissions() {
-        System.out.println("Opening Submissions popup...");
+        System.out.println("🚀 Opening Submissions popup...");
 
         Stage popupStage = new Stage();
-        popupStage.setTitle("Submit Project");
+        popupStage.setTitle("📎 Submit Project");
 
-        VBox root = new VBox(10);
-        root.setPadding(new Insets(10));
+        // === Root Layout ===
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER_LEFT);
 
-        // Title Label
-        Label titleLabel = new Label("Upload Submission");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        // === Title ===
+        Label titleLabel = new Label("📤 Upload Submission");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
-        // ComboBox for phase selection (e.g., Abstract, Report, etc.)
+        // === Phase Selection ===
+        Label phaseLabel = new Label("Select Phase:");
         ComboBox<String> phaseComboBox = new ComboBox<>();
         phaseComboBox.getItems().addAll("Abstract", "Report", "Presentation", "Final Code");
-        phaseComboBox.setPromptText("Select Phase");
+        phaseComboBox.setPromptText("Choose a phase");
 
-        // File chooser for file upload
-        Button uploadButton = new Button("Upload File");
+        // === File Upload Section ===
+        Label fileLabel = new Label("📁 No file selected.");
+        Button uploadButton = new Button("Choose File");
         uploadButton.setOnAction(e -> handleFileUpload());
 
-        // Status and file label
-        Label fileLabel = new Label("No file selected.");
+        // === Submit Button and Status ===
+        Button submitButton = new Button("✅ Submit");
         Label statusLabel = new Label();
 
-        // Submit Button
-        Button submitButton = new Button("Submit");
-        submitButton.setOnAction(e -> handleSubmission(phaseComboBox.getValue(), fileLabel.getText(), statusLabel));
+        submitButton.setOnAction(e -> {
+            String selectedPhase = phaseComboBox.getValue();
+            String filePath = fileLabel.getText();
+            handleSubmission(selectedPhase, filePath, statusLabel);
+        });
 
-        // Adding all elements to the root
-        root.getChildren().addAll(titleLabel, phaseComboBox, uploadButton, fileLabel, submitButton, statusLabel);
+        // === Layout Composition ===
+        VBox phaseSection = new VBox(5, phaseLabel, phaseComboBox);
+        VBox uploadSection = new VBox(5, uploadButton, fileLabel);
+        VBox submitSection = new VBox(10, submitButton, statusLabel);
 
-        Scene scene = new Scene(root, 500, 400); 
+        root.getChildren().addAll(titleLabel, phaseSection, uploadSection, submitSection);
+
+        // === Scene and Stage ===
+        Scene scene = new Scene(root, 450, 350);
         popupStage.setScene(scene);
         popupStage.show();
     }

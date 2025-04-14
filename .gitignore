@@ -1,2 +1,3 @@
 # Ignore Maven target folder
 target/
+downloaded_files/
