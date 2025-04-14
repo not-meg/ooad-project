@@ -4,6 +4,7 @@ import com.capstone.service.AuthService;
 import com.capstone.service.FacultyService; // Import FacultyService
 import com.capstone.service.TeamService;
 import com.capstone.service.AdminService;
+import com.capstone.service.PhaseSubmissionService;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -91,7 +92,9 @@ public class LoginController {
 
             // Retrieve TeamService from ApplicationContext
             TeamService teamService = applicationContext.getBean(TeamService.class);
+            PhaseSubmissionService submissionService = applicationContext.getBean(PhaseSubmissionService.class);
             controller.setTeamService(teamService);
+            controller.setSubmissionService(submissionService);
 
             // Pass logged-in student ID
             controller.setLoggedInStudentID(usernameField.getText());

@@ -1,21 +1,32 @@
 package com.capstone.controller;
 
+import com.capstone.model.PhaseSubmission;
 import com.capstone.model.Team;
 import com.capstone.service.TeamService;
+import com.capstone.service.DriveUploader;
+import com.capstone.service.PhaseSubmissionService;
 
 import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 import java.util.Optional;
+import java.io.File;
 
 
 public class DashboardController {
@@ -42,20 +53,27 @@ public class DashboardController {
     public void setTeamService(TeamService teamService) {
         this.teamService = teamService;
     }
+    private PhaseSubmissionService submissionService;
+
+    public void setSubmissionService(PhaseSubmissionService submissionService) {
+        this.submissionService = submissionService;
+    }
 
     private String loggedInStudentID;
+    private File selectedFile;
 
     public void setLoggedInStudentID(String studentID) {
         this.loggedInStudentID = studentID;
         loadTeamDetails(); // Load data once ID is set
     }
 
-
     @FXML
     public void initialize() {
         teamIDLabel.setText(teamID);
         problemStatementLabel.setText(problemStatement);
         facultyLabel.setText(facultyName);
+
+        onDownloadButtonClick("1LEPejTJ8WtSiC-Jj-6iROg7Jk7VccL-g");
     }
 
     private void loadTeamDetails() {
@@ -84,7 +102,6 @@ public class DashboardController {
             System.out.println("❌ No team found for student: " + loggedInStudentID);
         }
     }
-    
 
     @FXML
     private void handleNavigation(javafx.scene.input.MouseEvent event) {
@@ -102,18 +119,9 @@ public class DashboardController {
                 System.out.println("Navigating to Notification... (TODO: Implement navigation)");
                 break;
             case "Submission":
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/submission.fxml"));
-                    Parent submissionRoot = loader.load();
-
-                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                    stage.setScene(new Scene(submissionRoot));
-                    stage.show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                System.out.println("Opening Submissions popup...");
+                handleSubmissions();
                 break;
-
             case "Mentor Feedback":
                 System.out.println("Navigating to Mentor Feedback... (TODO: Implement navigation)");
                 break;
@@ -174,6 +182,127 @@ public class DashboardController {
     }
 
     @FXML
+    private void handleSubmissions() {
+        System.out.println("Opening Submissions popup...");
+
+        Stage popupStage = new Stage();
+        popupStage.setTitle("Submit Project");
+
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
+
+        // Title Label
+        Label titleLabel = new Label("Upload Submission");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        // ComboBox for phase selection (e.g., Abstract, Report, etc.)
+        ComboBox<String> phaseComboBox = new ComboBox<>();
+        phaseComboBox.getItems().addAll("Abstract", "Report", "Presentation", "Final Code");
+        phaseComboBox.setPromptText("Select Phase");
+
+        // File chooser for file upload
+        Button uploadButton = new Button("Upload File");
+        uploadButton.setOnAction(e -> handleFileUpload());
+
+        // Status and file label
+        Label fileLabel = new Label("No file selected.");
+        Label statusLabel = new Label();
+
+        // Submit Button
+        Button submitButton = new Button("Submit");
+        submitButton.setOnAction(e -> handleSubmission(phaseComboBox.getValue(), fileLabel.getText(), statusLabel));
+
+        // Adding all elements to the root
+        root.getChildren().addAll(titleLabel, phaseComboBox, uploadButton, fileLabel, submitButton, statusLabel);
+
+        Scene scene = new Scene(root, 500, 400); 
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
+
+    // Handle file upload
+    private void handleFileUpload() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
+        selectedFile = fileChooser.showOpenDialog(null);
+
+        if (selectedFile != null) {
+            System.out.println("File selected: " + selectedFile.getName());
+        }
+    }
+
+    // Handle submission logic
+    private void handleSubmission(String selectedPhase, String fileLabelText, Label statusLabel) {
+        if (selectedFile == null || selectedPhase == null) {
+            statusLabel.setText("Please select both a file and a phase.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+            return;
+        }
+
+        // Upload file to Google Drive
+        String fileId = DriveUploader.uploadFile(selectedFile);
+
+        if (fileId != null) {
+            // File uploaded successfully, now save the submission in MongoDB
+            PhaseSubmission phaseSubmission = new PhaseSubmission(
+                "T001", // Replace with actual team ID
+                mapPhaseToInt(selectedPhase),
+                fileId
+            );
+
+            // Save the submission to the database using PhaseSubmissionService
+            boolean dbSuccess = submissionService.saveSubmission(phaseSubmission);
+
+            if (dbSuccess) {
+                statusLabel.setText("Successfully uploaded for phase: " + selectedPhase);
+                statusLabel.setStyle("-fx-text-fill: green;");
+            } else {
+                statusLabel.setText("Failed to save to the database.");
+                statusLabel.setStyle("-fx-text-fill: red;");
+            }
+        } else {
+            statusLabel.setText("Upload failed. Please try again.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+        }
+    }
+
+    private int mapPhaseToInt(String phase) {
+        switch (phase) {
+            case "Abstract":
+                return 1;
+            case "Report":
+                return 2;
+            case "Presentation":
+                return 3;
+            case "Final Code":
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    
+    @FXML
+    public void onDownloadButtonClick(String fileId) {
+        String directoryPath = "downloaded_files";
+    
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("✅ Directory created: " + directoryPath);
+            } else {
+                showAlert("❌ Error", "Could not create directory for saving files.");
+                return;
+            }
+        }
+    
+        String destinationPath = directoryPath + "/" + fileId + ".pdf";
+        DriveUploader.retrieveFile(fileId, destinationPath);
+    
+        showAlert("✅ Success", "File downloaded successfully.");
+    }
+
+    
+    @FXML
     private void handleLogout(ActionEvent event) {
         System.out.println("Logging out");
         // Implement navigation logic here (e.g., open a new window)
@@ -191,5 +320,13 @@ public class DashboardController {
 
         transition.play();
         isSidebarOpen = !isSidebarOpen;
+    }
+
+        private void showAlert(String title, String message) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
