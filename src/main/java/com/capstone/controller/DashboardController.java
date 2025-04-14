@@ -115,7 +115,23 @@ public class DashboardController {
 
         switch (section) {
             case "Home":
-                System.out.println("Navigating to Dashboard... (TODO: Implement navigation)");
+                System.out.println("Navigating to Dashboard..");
+                System.out.println("Navigating to Dashboard...");
+
+                // Close the sidebar if open
+                if (isSidebarOpen) {
+                    TranslateTransition transition = new TranslateTransition(Duration.millis(300), sidebar);
+                    transition.setToX(-200);
+                    transition.play();
+                    isSidebarOpen = false;
+                }
+
+                // Reload dashboard details using stored student ID
+                if (loggedInStudentID != null) {
+                    loadTeamDetails();
+                } else {
+                    System.out.println("⚠️ Cannot reload dashboard — student not logged in.");
+                }
                 break;
             case "Profile":
                 System.out.println("Navigating to Profile... (TODO: Implement navigation)");
