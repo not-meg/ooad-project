@@ -13,6 +13,7 @@ public class Team {
     private String facultyID;
     private Set<String> studentIDs; // Ensuring uniqueness
     private String password; // New field
+    private String status = "pending";
 
     public Team() {
         this.studentIDs = new HashSet<>(); // Enforce unique student IDs
@@ -24,6 +25,7 @@ public class Team {
         this.facultyID = facultyID;
         this.studentIDs = new HashSet<>();
         this.password = password;
+        this.status = "pending";
     }
 
     public String getTeamID() {
@@ -52,6 +54,14 @@ public class Team {
 
     public Set<String> getStudentIDs() {
         return studentIDs;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public boolean addMember(String studentID) {
