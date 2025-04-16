@@ -54,6 +54,9 @@ public class AdminDashboardController {
     private Label resultsLink;
     @FXML
     private Label logoutLink;
+    @FXML
+    private Label scheduleLink;
+
 
     @FXML
     private Button logoutButton;
@@ -147,6 +150,11 @@ public class AdminDashboardController {
 
             case "submissionsLink":
                 System.out.println("Navigating to Submissions...");
+                break;
+            
+            case "scheduleLink":
+                System.out.println("Navigating to Schedule...");
+                handleScheduleView();
                 break;
 
             case "analyticsLink":
@@ -374,6 +382,46 @@ public class AdminDashboardController {
         popupStage.setScene(scene);
         popupStage.show();
     }
+
+    private void handleScheduleView() {
+        if (teamService == null) {
+            System.out.println("Error: teamService is not set!");
+            return;
+        }
+
+        Stage popupStage = new Stage();
+        popupStage.setTitle("All Teams");
+
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
+
+        TableView<Team> teamTable = new TableView<>();
+
+        TableColumn<Team, String> teamIdCol = new TableColumn<>("Team ID");
+        teamIdCol.setCellValueFactory(new PropertyValueFactory<>("teamID"));
+        teamIdCol.setPrefWidth(150);
+
+        TableColumn<Team, String> facultyIdCol = new TableColumn<>("Faculty ID");
+        facultyIdCol.setCellValueFactory(new PropertyValueFactory<>("facultyID"));
+        facultyIdCol.setPrefWidth(150);
+
+        teamTable.getColumns().addAll(teamIdCol, facultyIdCol);
+
+        // ✅ Filter only teams with status "Accepted"
+        List<Team> acceptedTeams = teamService.getAllTeams()
+            .stream()
+            .filter(team -> "Accepted".equalsIgnoreCase(team.getStatus()))
+            .toList();
+
+        teamTable.getItems().addAll(acceptedTeams);
+
+        root.getChildren().add(teamTable);
+
+        Scene scene = new Scene(root, 400, 600);
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
+
 
     @FXML
     private void handleLogout() {
