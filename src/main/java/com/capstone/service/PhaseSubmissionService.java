@@ -43,5 +43,9 @@ public class PhaseSubmissionService {
 
     public List<PhaseSubmission> getSubmissionsByTeamID(String teamID) {
         return phaseSubmissionRepository.findByTeamID(teamID);
-    }    
+    }
+
+    public void updateSubmission(PhaseSubmission submission) {
+        phaseSubmissionRepository.save(submission); // Automatically updates if ID exists
+    }
 }

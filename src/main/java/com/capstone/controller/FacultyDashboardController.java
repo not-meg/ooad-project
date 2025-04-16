@@ -16,7 +16,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -179,40 +181,79 @@ public class FacultyDashboardController {
 
     private void handleViewSubmissions(String teamID) {
         List<PhaseSubmission> submissions = submissionService.getSubmissionsByTeamID(teamID);
-    
+
         Stage submissionsStage = new Stage();
         submissionsStage.initModality(Modality.APPLICATION_MODAL);
         submissionsStage.setTitle("Submissions for Team: " + teamID);
-    
+
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(15));
         layout.setAlignment(Pos.TOP_LEFT);
-    
+
         if (submissions.isEmpty()) {
             layout.getChildren().add(new Label("No submissions found for this team."));
         } else {
             for (PhaseSubmission submission : submissions) {
-                VBox submissionBox = new VBox(5);
+                VBox submissionBox = new VBox(8);
                 submissionBox.setStyle("-fx-border-color: #ccc; -fx-border-width: 1; -fx-padding: 10;");
-    
+
                 Label submissionInfo = new Label("📌 Phase: " + submission.getPhase() +
-                                                 "\n🗓 Date: " + submission.getSubmissionDate());
-    
+                                                "\n🗓 Date: " + submission.getSubmissionDate() +
+                                                "\n📄 Status: " + submission.getStatus());
+
+                // ⬇ Download Button
                 Button downloadButton = new Button("⬇ Download as PDF");
                 downloadButton.setOnAction(e -> onDownloadButtonClick(submission.getDocumentID()));
-    
-                submissionBox.getChildren().addAll(submissionInfo, downloadButton);
+
+                // 📝 Feedback Button
+                Button feedbackButton = new Button("📝 Give Feedback");
+                feedbackButton.setOnAction(e -> {
+                    TextInputDialog dialog = new TextInputDialog(submission.getFeedback() != null ? submission.getFeedback() : "");
+                    dialog.setTitle("Give Feedback");
+                    dialog.setHeaderText("Provide feedback for Phase " + submission.getPhase());
+                    dialog.setContentText("Feedback:");
+
+                    dialog.showAndWait().ifPresent(feedback -> {
+                        submission.setFeedback(feedback);
+                        submissionService.updateSubmission(submission); // Ensure your service has this method!
+                        showAlert("✅ Success", "Feedback submitted!");
+                    });
+                });
+
+                // ✅ Accept / ❌ Reject Buttons
+                HBox decisionButtons = new HBox(10);
+                Button acceptButton = new Button("✅ Accept");
+                Button rejectButton = new Button("❌ Reject");
+
+                acceptButton.setOnAction(e -> {
+                    submission.setStatus("Approved");
+                    submissionService.updateSubmission(submission);
+                    showAlert("✅ Status Updated", "Submission marked as Approved.");
+                    submissionsStage.close(); // Refreshing logic can be added
+                });
+
+                rejectButton.setOnAction(e -> {
+                    submission.setStatus("Rejected");
+                    submissionService.updateSubmission(submission);
+                    showAlert("⚠ Status Updated", "Submission marked as Rejected.");
+                    submissionsStage.close();
+                });
+
+                decisionButtons.getChildren().addAll(acceptButton, rejectButton);
+
+                submissionBox.getChildren().addAll(submissionInfo, downloadButton, feedbackButton, decisionButtons);
                 layout.getChildren().add(submissionBox);
             }
         }
-    
+
         ScrollPane scrollPane = new ScrollPane(layout);
         scrollPane.setFitToWidth(true);
-    
-        Scene scene = new Scene(scrollPane, 450, 400);
+
+        Scene scene = new Scene(scrollPane, 500, 500);
         submissionsStage.setScene(scene);
         submissionsStage.showAndWait();
     }
+
 
     @FXML
     public void onDownloadButtonClick(String fileId) {

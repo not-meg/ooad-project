@@ -16,9 +16,12 @@ public class PhaseSubmission {
     private LocalDateTime submissionDate;
     private Float grade;
     private String feedback;
+    private String status; // NEW: Submission status
 
     // Constructors
-    public PhaseSubmission() {}
+    public PhaseSubmission() {
+        this.status = "Approval Pending"; // Default value
+    }
 
     public PhaseSubmission(String teamID, int phase, String documentID) {
         this.teamID = teamID;
@@ -27,6 +30,7 @@ public class PhaseSubmission {
         this.submissionDate = LocalDateTime.now();
         this.grade = null;
         this.feedback = null;
+        this.status = "Approval Pending"; // Default value
     }
 
     // Getters
@@ -37,6 +41,7 @@ public class PhaseSubmission {
     public LocalDateTime getSubmissionDate() { return submissionDate; }
     public Float getGrade() { return grade; }
     public String getFeedback() { return feedback; }
+    public String getStatus() { return status; }
 
     // Setters
     public void setTeamID(String teamID) {
@@ -61,5 +66,9 @@ public class PhaseSubmission {
 
     public void setFeedback(String feedback) {
         this.feedback = feedback;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
