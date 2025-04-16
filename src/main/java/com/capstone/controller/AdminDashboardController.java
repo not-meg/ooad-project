@@ -27,29 +27,42 @@ import com.capstone.model.Faculty;
 import com.capstone.model.Student;
 import com.capstone.model.Team;
 import com.capstone.model.Admin;
+import javafx.scene.control.ChoiceBox;
 
 @Controller
 public class AdminDashboardController {
 
-    @FXML private VBox sidebar;
-    @FXML private Button menuButton;
+    @FXML
+    private VBox sidebar;
+    @FXML
+    private Button menuButton;
 
-    @FXML private Label adminIDLabel;
-    @FXML private Label adminNameLabel;
-    @FXML private Label adminEmailLabel;
-    
-    @FXML private Label homeLink;
-    @FXML private Label usersLink;
-    @FXML private Label reviewScheduleLink;
-    @FXML private Label resultsLink;
-    @FXML private Label logoutLink;
+    @FXML
+    private Label adminIDLabel;
+    @FXML
+    private Label adminNameLabel;
+    @FXML
+    private Label adminEmailLabel;
 
-    @FXML private Button logoutButton;
+    @FXML
+    private Label homeLink;
+    @FXML
+    private Label usersLink;
+    @FXML
+    private Label reviewScheduleLink;
+    @FXML
+    private Label resultsLink;
+    @FXML
+    private Label logoutLink;
+
+    @FXML
+    private Button logoutButton;
 
     private boolean isSidebarOpen = false;
     private String loggedInAdminID;
 
-    public AdminDashboardController() {}
+    public AdminDashboardController() {
+    }
 
     private AdminService adminService;
     private TeamService teamService;
@@ -77,12 +90,12 @@ public class AdminDashboardController {
             System.out.println("Error: adminService is null!");
             return;
         }
-    
+
         if (loggedInAdminID == null) {
             System.out.println("Error: loggedInAdminID is null!");
             return;
         }
-    
+
         adminService.getAdminById(loggedInAdminID).ifPresentOrElse(admin -> {
             adminIDLabel.setText(admin.getUserID());
             adminNameLabel.setText(admin.getName());
@@ -93,7 +106,7 @@ public class AdminDashboardController {
             adminEmailLabel.setText("Unknown");
         });
     }
-    
+
     @FXML
     private void toggleSidebar() {
         TranslateTransition transition = new TranslateTransition(Duration.millis(300), sidebar);
@@ -152,107 +165,106 @@ public class AdminDashboardController {
     @FXML
     private void handleManageUsers() {
         System.out.println("Opening Manage Users section...");
-    
+
         if (adminService == null) {
             System.out.println("Error: adminService is not set!");
             return;
         }
-    
+
         // Create a new Stage (popup window)
         Stage popupStage = new Stage();
         popupStage.setTitle("Manage Users");
-    
+
         VBox root = new VBox(10);
         root.setPadding(new Insets(10));
-    
+
         // --- Table for Students ---
         Label studentLabel = new Label("Students");
         TableView<Student> studentTable = createStudentTable();
         studentTable.getItems().addAll(adminService.getAllStudents());
-    
+
         // --- Table for Faculty ---
         Label facultyLabel = new Label("Faculty");
         TableView<Faculty> facultyTable = createFacultyTable();
         facultyTable.getItems().addAll(adminService.getAllFaculty());
-    
+
         // --- Table for Admins ---
         Label adminLabel = new Label("Admins");
         TableView<Admin> adminTable = createAdminTable();
         adminTable.getItems().addAll(adminService.getAllAdmins());
-    
+
         root.getChildren().addAll(
-            studentLabel, studentTable,
-            facultyLabel, facultyTable,
-            adminLabel, adminTable
-        );
-    
+                studentLabel, studentTable,
+                facultyLabel, facultyTable,
+                adminLabel, adminTable);
+
         Scene scene = new Scene(new ScrollPane(root), 1000, 700); // Wider for more columns
         popupStage.setScene(scene);
         popupStage.show();
     }
-    
+
     // Create Student Table (with department, gender, cgpa)
     private TableView<Student> createStudentTable() {
         TableView<Student> tableView = new TableView<>();
-    
+
         TableColumn<Student, String> idColumn = new TableColumn<>("User ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
-    
+
         TableColumn<Student, String> nameColumn = new TableColumn<>("Name");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-    
+
         TableColumn<Student, String> emailColumn = new TableColumn<>("Email");
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-    
+
         TableColumn<Student, String> departmentColumn = new TableColumn<>("Department");
         departmentColumn.setCellValueFactory(new PropertyValueFactory<>("department"));
-    
+
         TableColumn<Student, String> genderColumn = new TableColumn<>("Gender");
         genderColumn.setCellValueFactory(new PropertyValueFactory<>("gender"));
-    
+
         TableColumn<Student, Double> cgpaColumn = new TableColumn<>("CGPA");
         cgpaColumn.setCellValueFactory(new PropertyValueFactory<>("cgpa"));
-    
+
         tableView.getColumns().addAll(idColumn, nameColumn, emailColumn, departmentColumn, genderColumn, cgpaColumn);
         return tableView;
     }
-    
+
     // Create Faculty Table (with department, designation)
     private TableView<Faculty> createFacultyTable() {
         TableView<Faculty> tableView = new TableView<>();
-    
+
         TableColumn<Faculty, String> idColumn = new TableColumn<>("User ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
-    
+
         TableColumn<Faculty, String> nameColumn = new TableColumn<>("Name");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-    
+
         TableColumn<Faculty, String> emailColumn = new TableColumn<>("Email");
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-    
+
         TableColumn<Faculty, String> departmentColumn = new TableColumn<>("Department");
         departmentColumn.setCellValueFactory(new PropertyValueFactory<>("department"));
-    
+
         TableColumn<Faculty, String> designationColumn = new TableColumn<>("Designation");
         designationColumn.setCellValueFactory(new PropertyValueFactory<>("designation"));
-    
+
         tableView.getColumns().addAll(idColumn, nameColumn, emailColumn, departmentColumn, designationColumn);
         return tableView;
     }
-    
+
     // Create Admin Table (basic user info)
     private TableView<Admin> createAdminTable() {
         TableView<Admin> tableView = new TableView<>();
-    
+
         TableColumn<Admin, String> idColumn = new TableColumn<>("User ID");
         idColumn.setCellValueFactory(new PropertyValueFactory<>("userID"));
-    
+
         TableColumn<Admin, String> nameColumn = new TableColumn<>("Name");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-    
+
         TableColumn<Admin, String> emailColumn = new TableColumn<>("Email");
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-    
+
         tableView.getColumns().addAll(idColumn, nameColumn, emailColumn);
         return tableView;
     }
@@ -263,28 +275,29 @@ public class AdminDashboardController {
             System.out.println("Error: teamService is not set!");
             return;
         }
-    
+
         Stage popupStage = new Stage();
         popupStage.setTitle("Teams");
-    
+
         VBox root = new VBox(10);
         root.setPadding(new Insets(10));
-    
+
         TableView<Team> teamTable = new TableView<>();
-    
+
         // Define columns
         TableColumn<Team, String> teamIdColumn = new TableColumn<>("Team ID");
         teamIdColumn.setCellValueFactory(new PropertyValueFactory<>("teamID"));
         teamIdColumn.setPrefWidth(150);
-    
+
         TableColumn<Team, String> problemStatementColumn = new TableColumn<>("Problem Statement");
         problemStatementColumn.setCellValueFactory(new PropertyValueFactory<>("problemStatement"));
         problemStatementColumn.setPrefWidth(300);
-    
+
         TableColumn<Team, String> facultyIdColumn = new TableColumn<>("Faculty ID");
         facultyIdColumn.setCellValueFactory(new PropertyValueFactory<>("facultyID"));
         facultyIdColumn.setPrefWidth(100);
-    
+
+        // Define studentIds column with multiline support
         TableColumn<Team, String> studentIdsColumn = new TableColumn<>("Student IDs");
         studentIdsColumn.setCellValueFactory(cellData -> {
             Set<String> studentIDs = cellData.getValue().getStudentIDs();
@@ -292,17 +305,49 @@ public class AdminDashboardController {
             return new javafx.beans.property.SimpleStringProperty(joinedStudentIDs);
         });
         studentIdsColumn.setPrefWidth(200);
-    
-        // Custom cell to support multiline student IDs
+
+        // Separate status column with dropdown
+        TableColumn<Team, String> statusColumn = new TableColumn<>("Status");
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        statusColumn.setPrefWidth(150);
+
+        statusColumn.setCellFactory(param -> {
+            return new TableCell<Team, String>() {
+                private final ChoiceBox<String> statusChoiceBox = new ChoiceBox<>();
+
+                {
+                    statusChoiceBox.getItems().addAll("Pending", "Accepted", "Rejected");
+                    statusChoiceBox.setOnAction(e -> {
+                        Team team = getTableView().getItems().get(getIndex());
+                        String newStatus = statusChoiceBox.getValue();
+                        team.setStatus(newStatus);
+                        teamService.updateTeamStatus(team); // Update status in backend
+                    });
+                }
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setGraphic(null);
+                    } else {
+                        statusChoiceBox.setValue(item);
+                        setGraphic(statusChoiceBox);
+                    }
+                }
+            };
+        });
+
+        // Custom cell for multiline student IDs
         studentIdsColumn.setCellFactory(column -> {
             return new TableCell<Team, String>() {
                 private final Text text = new Text();
-    
+
                 {
                     text.wrappingWidthProperty().bind(studentIdsColumn.widthProperty().subtract(10)); // Allow wrapping
                     setGraphic(text);
                 }
-    
+
                 @Override
                 protected void updateItem(String item, boolean empty) {
                     super.updateItem(item, empty);
@@ -314,22 +359,22 @@ public class AdminDashboardController {
                 }
             };
         });
-    
+
         // Add columns to the table
-        teamTable.getColumns().addAll(teamIdColumn, problemStatementColumn, facultyIdColumn, studentIdsColumn);
-    
-        // Fetch teams from service
+        teamTable.getColumns().addAll(teamIdColumn, problemStatementColumn, facultyIdColumn, studentIdsColumn,
+                statusColumn);
+
+        // Populate the table
         List<Team> teams = teamService.getAllTeams();
         teamTable.getItems().addAll(teams);
-    
+
         root.getChildren().add(teamTable);
-    
-        Scene scene = new Scene(new ScrollPane(root), 850, 600); // Wider window
+
+        Scene scene = new Scene(root, 1000, 700);
         popupStage.setScene(scene);
         popupStage.show();
     }
-    
-    
+
     @FXML
     private void handleLogout() {
         System.out.println("Logging out... (TODO)");

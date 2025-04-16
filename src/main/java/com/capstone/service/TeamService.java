@@ -138,5 +138,9 @@ public class TeamService {
     public List<Team> getAllTeams() {
         return teamRepository.findAll();
     }
-    
+
+    public void updateTeamStatus(Team team) {
+        teamRepository.save(team);
+    }
+
 }
