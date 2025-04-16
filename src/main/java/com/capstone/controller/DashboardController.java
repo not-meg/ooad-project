@@ -6,6 +6,8 @@ import com.capstone.service.TeamService;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.PhaseSubmissionService;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -22,9 +24,11 @@ import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.util.Optional;
+import java.util.Random;
 import java.io.File;
 import java.util.List;
 import javafx.scene.layout.Region;
+import java.util.Comparator;
 
 public class DashboardController {
 
@@ -260,8 +264,8 @@ public class DashboardController {
         VBox submitSection = new VBox(10, submitButton, statusLabel);
 
         root.getChildren().addAll(titleLabel, phaseSection, uploadSection, submitSection);
-
-        Scene scene = new Scene(root, 450, 350);
+    
+        Scene scene = new Scene(root, 450, 400);
         popupStage.setScene(scene);
         popupStage.show();
     }
@@ -277,49 +281,94 @@ public class DashboardController {
         }
     }
 
-    // Handle submission logic
     private void handleSubmission(String selectedPhase, String fileLabelText, Label statusLabel) {
         if (selectedFile == null || selectedPhase == null) {
             statusLabel.setText("Please select both a file and a phase.");
             statusLabel.setStyle("-fx-text-fill: red;");
             return;
         }
-
-        // Fetch team ID dynamically from logged-in student
+    
+        // Fetch team ID
         Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
         if (!teamOpt.isPresent()) {
             statusLabel.setText("Team not found. Cannot submit.");
             statusLabel.setStyle("-fx-text-fill: red;");
             return;
         }
-
+    
         String teamId = teamOpt.get().getTeamID();
-
-        // Upload file to Google Drive
-        String fileId = DriveUploader.uploadFile(selectedFile);
-
-        if (fileId != null) {
-            // File uploaded successfully, now save the submission in MongoDB
-            PhaseSubmission phaseSubmission = new PhaseSubmission(
-                    teamId,
-                    mapPhaseToInt(selectedPhase),
-                    fileId);
-
-            boolean dbSuccess = submissionService.saveSubmission(phaseSubmission);
-
-            if (dbSuccess) {
-                statusLabel.setText("Successfully uploaded for phase: " + selectedPhase);
-                statusLabel.setStyle("-fx-text-fill: green;");
+        int selectedPhaseInt = mapPhaseToInt(selectedPhase);
+    
+        if (selectedPhaseInt < 1 || selectedPhaseInt > 4) {
+            statusLabel.setText("Invalid phase selected.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+            return;
+        }
+    
+        // Get existing submissions
+        List<PhaseSubmission> existingSubs = submissionService.getSubmissionsByTeamID(teamId);
+        existingSubs.sort(Comparator.comparingInt(PhaseSubmission::getPhase)); // Ascending sort
+    
+        if (!existingSubs.isEmpty()) {
+            PhaseSubmission lastSubmission = existingSubs.get(existingSubs.size() - 1);
+            int lastPhase = lastSubmission.getPhase();
+            String lastStatus = lastSubmission.getStatus();
+    
+            if ("Rejected".equalsIgnoreCase(lastStatus)) {
+                // If rejected, must re-submit the same phase
+                if (selectedPhaseInt != lastPhase) {
+                    statusLabel.setText("You must re-submit Phase " + lastPhase + " before proceeding.");
+                    statusLabel.setStyle("-fx-text-fill: red;");
+                    return;
+                }
             } else {
-                statusLabel.setText("Failed to save to the database.");
+                // If last was accepted
+                if (lastPhase == 4) {
+                    statusLabel.setText("✅ All 4 phases have already been successfully submitted!");
+                    statusLabel.setStyle("-fx-text-fill: green;");
+                    return;
+                }
+                if (selectedPhaseInt != lastPhase + 1) {
+                    statusLabel.setText("You must complete Phase " + (lastPhase + 1) + " first.");
+                    statusLabel.setStyle("-fx-text-fill: red;");
+                    return;
+                }
+            }
+        } else {
+            // No previous submissions yet, only allow Phase 1
+            if (selectedPhaseInt != 1) {
+                statusLabel.setText("You must start with Phase 1.");
+                statusLabel.setStyle("-fx-text-fill: red;");
+                return;
+            }
+        }
+    
+        // Upload file to Drive
+        String fileId = DriveUploader.uploadFile(selectedFile);
+    
+        if (fileId != null) {
+            PhaseSubmission phaseSubmission = new PhaseSubmission(
+                teamId,
+                selectedPhaseInt,
+                fileId
+            );
+    
+            boolean dbSuccess = submissionService.saveOrUpdateSubmission(phaseSubmission);
+    
+            if (dbSuccess) {
+                statusLabel.setText("✅ Successfully uploaded for phase: " + selectedPhase);
+                statusLabel.setStyle("-fx-text-fill: green;");
+                simulateAIChecksAndDisplay(statusLabel, selectedPhase, teamId, selectedPhaseInt);
+            } else {
+                statusLabel.setText("❌ Failed to save to the database.");
                 statusLabel.setStyle("-fx-text-fill: red;");
             }
         } else {
-            statusLabel.setText("Upload failed. Please try again.");
+            statusLabel.setText("❌ Upload failed. Please try again.");
             statusLabel.setStyle("-fx-text-fill: red;");
         }
     }
-
+    
     private int mapPhaseToInt(String phase) {
         switch (phase) {
             case "Abstract":
@@ -334,6 +383,44 @@ public class DashboardController {
                 return 0;
         }
     }
+
+    private void simulateAIChecksAndDisplay(Label statusLabel, String selectedPhase, String teamId, int phaseInt) {
+        statusLabel.setText(statusLabel.getText() + "\n\n🔍 Running AI and plagiarism checks...");
+    
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
+            Random rand = new Random();
+            int aiScore = rand.nextInt(18); // 0 to 30
+            int plagiarismScore = rand.nextInt(18); // 0 to 30
+    
+            StringBuilder result = new StringBuilder();
+            result.append("\n\n✅ Analysis for ").append(selectedPhase).append(" complete:")
+                  .append("\n💡 AI Detection Score: ").append(aiScore).append("%")
+                  .append("\n📄 Plagiarism Score: ").append(plagiarismScore).append("%");
+    
+            // Fetch the latest submission (assuming only one per teamId+phase combo)
+            PhaseSubmission latest = submissionService.getSubmissionByTeamIDAndPhase(teamId, phaseInt);
+    
+            if (latest != null) {
+                if (aiScore > 15 || plagiarismScore > 15) {
+                    latest.setStatus("Rejected");
+                    result.append("\n\n❌ Submission Rejected: High AI or Plagiarism score detected.");
+                    statusLabel.setStyle("-fx-text-fill: red;");
+                } else {
+                    latest.setStatus("AI Check Passed");
+                    result.append("\n\n🎉 Submission Accepted: Passed all checks.");
+                    statusLabel.setStyle("-fx-text-fill: green;");
+                }
+    
+                submissionService.updateSubmission(latest); // Save updated status
+            } else {
+                result.append("\n⚠️ Could not update submission status (not found).");
+            }
+    
+            statusLabel.setText(statusLabel.getText() + result);
+        }));
+        timeline.setCycleCount(1);
+        timeline.play();
+    } 
 
     @FXML
     private void showTeamStatusNotification() {
@@ -357,7 +444,7 @@ public class DashboardController {
             showAlert("Team Not Found", "You are not part of any team.");
         }
     }
-
+    
     @FXML
     private void handleMentorFeedback() {
         if (submissionService == null || teamService == null || loggedInStudentID == null) {
