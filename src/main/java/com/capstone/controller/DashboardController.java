@@ -137,6 +137,7 @@ public class DashboardController {
                 break;
             case "Notification":
                 System.out.println("Navigating to Notification... (TODO: Implement navigation)");
+                showTeamStatusNotification();
                 break;
             case "Submission":
                 System.out.println("Opening Submissions popup...");
@@ -208,58 +209,58 @@ public class DashboardController {
             showAlert("Error", "Team service not initialized or student not logged in.");
             return;
         }
-    
+
         Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
         if (!teamOpt.isPresent()) {
             showAlert("Error", "Team not found! Please contact support.");
             return;
         }
-    
+
         Team team = teamOpt.get();
-    
+
         if (!"Accepted".equalsIgnoreCase(team.getStatus())) {
             showAlert("Access Denied", "Submissions are only allowed for approved teams.");
             return;
         }
-    
+
         showSubmissionPopup();
-    }    
-    
+    }
+
     private void showSubmissionPopup() {
         Stage popupStage = new Stage();
         popupStage.setTitle("📎 Submit Project");
-    
+
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER_LEFT);
-    
+
         Label titleLabel = new Label("📤 Upload Submission");
         titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
-    
+
         Label phaseLabel = new Label("Select Phase:");
         ComboBox<String> phaseComboBox = new ComboBox<>();
         phaseComboBox.getItems().addAll("Abstract", "Report", "Presentation", "Final Code");
         phaseComboBox.setPromptText("Choose a phase");
-    
+
         Label fileLabel = new Label("📁 No file selected.");
         Button uploadButton = new Button("Choose File");
         uploadButton.setOnAction(e -> handleFileUpload());
-    
+
         Button submitButton = new Button("✅ Submit");
         Label statusLabel = new Label();
-    
+
         submitButton.setOnAction(e -> {
             String selectedPhase = phaseComboBox.getValue();
             String filePath = fileLabel.getText();
             handleSubmission(selectedPhase, filePath, statusLabel);
         });
-    
+
         VBox phaseSection = new VBox(5, phaseLabel, phaseComboBox);
         VBox uploadSection = new VBox(5, uploadButton, fileLabel);
         VBox submitSection = new VBox(10, submitButton, statusLabel);
-    
+
         root.getChildren().addAll(titleLabel, phaseSection, uploadSection, submitSection);
-    
+
         Scene scene = new Scene(root, 450, 350);
         popupStage.setScene(scene);
         popupStage.show();
@@ -302,8 +303,7 @@ public class DashboardController {
             PhaseSubmission phaseSubmission = new PhaseSubmission(
                     teamId,
                     mapPhaseToInt(selectedPhase),
-                    fileId
-            );
+                    fileId);
 
             boolean dbSuccess = submissionService.saveSubmission(phaseSubmission);
 
@@ -336,29 +336,52 @@ public class DashboardController {
     }
 
     @FXML
+    private void showTeamStatusNotification() {
+        if (teamService == null || loggedInStudentID == null) {
+            showAlert("Error", "Team service or student ID is not initialized.");
+            return;
+        }
+
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+        if (teamOpt.isPresent()) {
+            Team team = teamOpt.get();
+            String teamStatus = team.getStatus(); // Get the status of the team
+
+            // Create and display the alert with team status
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Team Status");
+            alert.setHeaderText("Your Team Status");
+            alert.setContentText("The current status of your team is: " + teamStatus);
+            alert.showAndWait();
+        } else {
+            showAlert("Team Not Found", "You are not part of any team.");
+        }
+    }
+
+    @FXML
     private void handleMentorFeedback() {
         if (submissionService == null || teamService == null || loggedInStudentID == null) {
             showAlert("Error", "Required services not initialized.");
             return;
         }
-    
+
         Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
         if (!teamOpt.isPresent()) {
             showAlert("Error", "Team not found. Please contact support.");
             return;
         }
-    
+
         String teamId = teamOpt.get().getTeamID();
         List<PhaseSubmission> submissions = submissionService.getSubmissionsByTeamID(teamId);
-    
+
         if (submissions == null || submissions.isEmpty()) {
             showAlert("No Submissions", "Your team hasn't submitted anything yet.");
             return;
         }
-    
+
         StringBuilder submissionDetails = new StringBuilder();
         submissionDetails.append("Team ID: ").append(teamId).append("\n\n");
-    
+
         for (PhaseSubmission sub : submissions) {
             submissionDetails.append("📌 Phase: ").append(mapIntToPhase(sub.getPhase())).append("\n");
             submissionDetails.append("📁 File ID: ").append(sub.getDocumentID()).append("\n");
@@ -366,16 +389,15 @@ public class DashboardController {
             submissionDetails.append("📄 Submission Status: ").append(sub.getStatus()).append("\n");
             submissionDetails.append("----------------------------\n");
         }
-    
+
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setTitle("Your Team's Submissions");
         alert.setHeaderText("Here's what your team has submitted:");
         alert.setContentText(submissionDetails.toString());
         alert.setResizable(true);
-        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);  // so large text fits
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE); // so large text fits
         alert.showAndWait();
     }
-    
 
     private String mapIntToPhase(int phase) {
         switch (phase) {
