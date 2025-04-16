@@ -204,49 +204,62 @@ public class DashboardController {
 
     @FXML
     private void handleSubmissions() {
-        System.out.println("🚀 Opening Submissions popup...");
-
+        if (teamService == null || loggedInStudentID == null) {
+            showAlert("Error", "Team service not initialized or student not logged in.");
+            return;
+        }
+    
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+        if (!teamOpt.isPresent()) {
+            showAlert("Error", "Team not found! Please contact support.");
+            return;
+        }
+    
+        Team team = teamOpt.get();
+    
+        if (!"Accepted".equalsIgnoreCase(team.getStatus())) {
+            showAlert("Access Denied", "Submissions are only allowed for approved teams.");
+            return;
+        }
+    
+        showSubmissionPopup();
+    }    
+    
+    private void showSubmissionPopup() {
         Stage popupStage = new Stage();
         popupStage.setTitle("📎 Submit Project");
-
-        // === Root Layout ===
+    
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER_LEFT);
-
-        // === Title ===
+    
         Label titleLabel = new Label("📤 Upload Submission");
         titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
-
-        // === Phase Selection ===
+    
         Label phaseLabel = new Label("Select Phase:");
         ComboBox<String> phaseComboBox = new ComboBox<>();
         phaseComboBox.getItems().addAll("Abstract", "Report", "Presentation", "Final Code");
         phaseComboBox.setPromptText("Choose a phase");
-
-        // === File Upload Section ===
+    
         Label fileLabel = new Label("📁 No file selected.");
         Button uploadButton = new Button("Choose File");
         uploadButton.setOnAction(e -> handleFileUpload());
-
-        // === Submit Button and Status ===
+    
         Button submitButton = new Button("✅ Submit");
         Label statusLabel = new Label();
-
+    
         submitButton.setOnAction(e -> {
             String selectedPhase = phaseComboBox.getValue();
             String filePath = fileLabel.getText();
             handleSubmission(selectedPhase, filePath, statusLabel);
         });
-
-        // === Layout Composition ===
+    
         VBox phaseSection = new VBox(5, phaseLabel, phaseComboBox);
         VBox uploadSection = new VBox(5, uploadButton, fileLabel);
         VBox submitSection = new VBox(10, submitButton, statusLabel);
-
+    
         root.getChildren().addAll(titleLabel, phaseSection, uploadSection, submitSection);
-
-        // === Scene and Stage ===
+    
         Scene scene = new Scene(root, 450, 350);
         popupStage.setScene(scene);
         popupStage.show();
