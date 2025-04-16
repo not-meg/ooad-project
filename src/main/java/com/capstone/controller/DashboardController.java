@@ -284,17 +284,27 @@ public class DashboardController {
             return;
         }
 
+        // Fetch team ID dynamically from logged-in student
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+        if (!teamOpt.isPresent()) {
+            statusLabel.setText("Team not found. Cannot submit.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+            return;
+        }
+
+        String teamId = teamOpt.get().getTeamID();
+
         // Upload file to Google Drive
         String fileId = DriveUploader.uploadFile(selectedFile);
 
         if (fileId != null) {
             // File uploaded successfully, now save the submission in MongoDB
             PhaseSubmission phaseSubmission = new PhaseSubmission(
-                    "T001", // Replace with actual team ID
+                    teamId,
                     mapPhaseToInt(selectedPhase),
-                    fileId);
+                    fileId
+            );
 
-            // Save the submission to the database using PhaseSubmissionService
             boolean dbSuccess = submissionService.saveSubmission(phaseSubmission);
 
             if (dbSuccess) {
