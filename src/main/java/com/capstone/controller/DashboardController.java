@@ -23,6 +23,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.util.Optional;
 import java.io.File;
+import java.util.List;
+import javafx.scene.layout.Region;
 
 public class DashboardController {
 
@@ -141,7 +143,8 @@ public class DashboardController {
                 handleSubmissions();
                 break;
             case "Mentor Feedback":
-                System.out.println("Navigating to Mentor Feedback... (TODO: Implement navigation)");
+                System.out.println("Navigating to Mentor Feedback...");
+                handleMentorFeedback();
                 break;
             case "Results":
                 System.out.println("Navigating to Results... (TODO: Implement navigation)");
@@ -329,6 +332,63 @@ public class DashboardController {
                 return 4;
             default:
                 return 0;
+        }
+    }
+
+    @FXML
+    private void handleMentorFeedback() {
+        if (submissionService == null || teamService == null || loggedInStudentID == null) {
+            showAlert("Error", "Required services not initialized.");
+            return;
+        }
+    
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+        if (!teamOpt.isPresent()) {
+            showAlert("Error", "Team not found. Please contact support.");
+            return;
+        }
+    
+        String teamId = teamOpt.get().getTeamID();
+        List<PhaseSubmission> submissions = submissionService.getSubmissionsByTeamID(teamId);
+    
+        if (submissions == null || submissions.isEmpty()) {
+            showAlert("No Submissions", "Your team hasn't submitted anything yet.");
+            return;
+        }
+    
+        StringBuilder submissionDetails = new StringBuilder();
+        submissionDetails.append("Team ID: ").append(teamId).append("\n\n");
+    
+        for (PhaseSubmission sub : submissions) {
+            submissionDetails.append("📌 Phase: ").append(mapIntToPhase(sub.getPhase())).append("\n");
+            submissionDetails.append("📁 File ID: ").append(sub.getDocumentID()).append("\n");
+            submissionDetails.append("💬 Faculty Guide Feedback: ").append(sub.getFeedback()).append("\n");
+            submissionDetails.append("📄 Submission Status: ").append(sub.getStatus()).append("\n");
+            submissionDetails.append("----------------------------\n");
+        }
+    
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Your Team's Submissions");
+        alert.setHeaderText("Here's what your team has submitted:");
+        alert.setContentText(submissionDetails.toString());
+        alert.setResizable(true);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);  // so large text fits
+        alert.showAndWait();
+    }
+    
+
+    private String mapIntToPhase(int phase) {
+        switch (phase) {
+            case 1:
+                return "Abstract";
+            case 2:
+                return "Report";
+            case 3:
+                return "Presentation";
+            case 4:
+                return "Final Code";
+            default:
+                return "Unknown Phase";
         }
     }
 
