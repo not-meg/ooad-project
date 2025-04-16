@@ -44,7 +44,6 @@ public class DashboardController {
 
     private boolean isSidebarOpen = false;
 
-    // Placeholder team details (Replace with actual backend data later)
     private String teamID;
     private String problemStatement;
     private String facultyName;
@@ -77,8 +76,6 @@ public class DashboardController {
         teamIDLabel.setText(teamID);
         problemStatementLabel.setText(problemStatement);
         facultyLabel.setText(facultyName);
-
-        // onDownloadButtonClick("1LEPejTJ8WtSiC-Jj-6iROg7Jk7VccL-g");
     }
 
     private void loadTeamDetails() {
@@ -99,7 +96,7 @@ public class DashboardController {
             Team team = teamOpt.get();
             teamIDLabel.setText(team.getTeamID());
             problemStatementLabel.setText(team.getProblemStatement());
-            facultyLabel.setText(team.getFacultyID()); // or fetch actual name if needed
+            facultyLabel.setText(team.getFacultyID());
         } else {
             teamIDLabel.setText("N/A");
             problemStatementLabel.setText("No problem assigned.");
@@ -172,7 +169,7 @@ public class DashboardController {
         if (teamOpt.isPresent()) {
             Team team = teamOpt.get();
 
-            // ✅ Build the team details string
+            // Build the team details string
             StringBuilder details = new StringBuilder();
             details.append("Team ID: ").append(team.getTeamID()).append("\n");
             details.append("Problem Statement: ").append(team.getProblemStatement()).append("\n");
@@ -183,7 +180,7 @@ public class DashboardController {
                 details.append("- ").append(member).append("\n");
             }
 
-            // ✅ Show it in an Alert
+            // Show it in an Alert
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Team Details");
             alert.setHeaderText("Here's your awesome team 👇");
@@ -333,26 +330,6 @@ public class DashboardController {
             default:
                 return 0;
         }
-    }
-
-    @FXML
-    public void onDownloadButtonClick(String fileId) {
-        String directoryPath = "downloaded_files";
-
-        File directory = new File(directoryPath);
-        if (!directory.exists()) {
-            if (directory.mkdirs()) {
-                System.out.println("✅ Directory created: " + directoryPath);
-            } else {
-                showAlert("❌ Error", "Could not create directory for saving files.");
-                return;
-            }
-        }
-
-        String destinationPath = directoryPath + "/" + fileId + ".pdf";
-        DriveUploader.retrieveFile(fileId, destinationPath);
-
-        showAlert("✅ Success", "File downloaded successfully.");
     }
 
     @FXML
