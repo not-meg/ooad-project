@@ -1,23 +1,33 @@
 package com.capstone.controller;
 
+import com.capstone.model.PhaseSubmission;
 import com.capstone.model.Team;
+import com.capstone.service.DriveUploader;
 import com.capstone.service.FacultyService;
+import com.capstone.service.PhaseSubmissionService;
+
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.io.File;
 
 @Controller
 public class FacultyDashboardController {
@@ -41,12 +51,18 @@ public class FacultyDashboardController {
     private boolean isSidebarOpen = false;
 
     private FacultyService facultyService;
+    private PhaseSubmissionService submissionService;
+
     private String loggedInFacultyID;
 
     public FacultyDashboardController() {}
 
     public void setFacultyService(FacultyService facultyService) {
         this.facultyService = facultyService;
+    }
+
+    public void setPhaseSubmissionService(PhaseSubmissionService submissionService) {
+        this.submissionService = submissionService;
     }
 
     public void setLoggedInFacultyID(String facultyID) {
@@ -133,28 +149,102 @@ public class FacultyDashboardController {
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Assigned Teams");
 
-        ListView<String> teamListView = new ListView<>();
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(15));
+        layout.setAlignment(Pos.TOP_CENTER);
 
         if (teams.isEmpty()) {
-            teamListView.getItems().add("No teams assigned.");
+            layout.getChildren().add(new Label("No teams assigned."));
         } else {
             for (Team team : teams) {
-                String teamInfo = "Team ID: " + team.getTeamID() +
-                                  "\nProblem: " + team.getProblemStatement() +
-                                  "\nStudents: " + String.join(", ", team.getStudentIDs()) +
-                                  "\n--------------------------------";
-                teamListView.getItems().add(teamInfo);
+                VBox teamBox = new VBox(5);
+                teamBox.setStyle("-fx-border-color: gray; -fx-border-width: 1; -fx-padding: 10; -fx-background-color: #f8f8f8;");
+
+                Label teamInfo = new Label("Team ID: " + team.getTeamID() +
+                                        "\nProblem: " + team.getProblemStatement() +
+                                        "\nStudents: " + String.join(", ", team.getStudentIDs()));
+
+                Button viewSubmissionsButton = new Button("📂 View Submissions");
+                viewSubmissionsButton.setOnAction(e -> handleViewSubmissions(team.getTeamID()));
+
+                teamBox.getChildren().addAll(teamInfo, viewSubmissionsButton);
+                layout.getChildren().add(teamBox);
             }
         }
 
-        VBox layout = new VBox(10);
-        layout.setPadding(new Insets(15));
-        layout.setAlignment(Pos.CENTER);
-        layout.getChildren().add(teamListView);
+        ScrollPane scrollPane = new ScrollPane(layout);
+        scrollPane.setFitToWidth(true);
 
-        Scene scene = new Scene(layout, 500, 300);
+        Scene scene = new Scene(scrollPane, 500, 400);
         popupStage.setScene(scene);
         popupStage.showAndWait();
+    }
+
+    private void handleViewSubmissions(String teamID) {
+        List<PhaseSubmission> submissions = submissionService.getSubmissionsByTeamID(teamID);
+    
+        Stage submissionsStage = new Stage();
+        submissionsStage.initModality(Modality.APPLICATION_MODAL);
+        submissionsStage.setTitle("Submissions for Team: " + teamID);
+    
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(15));
+        layout.setAlignment(Pos.TOP_LEFT);
+    
+        if (submissions.isEmpty()) {
+            layout.getChildren().add(new Label("No submissions found for this team."));
+        } else {
+            for (PhaseSubmission submission : submissions) {
+                VBox submissionBox = new VBox(5);
+                submissionBox.setStyle("-fx-border-color: #ccc; -fx-border-width: 1; -fx-padding: 10;");
+    
+                Label submissionInfo = new Label("📌 Phase: " + submission.getPhase() +
+                                                 "\n🗓 Date: " + submission.getSubmissionDate());
+    
+                Button downloadButton = new Button("⬇ Download as PDF");
+                downloadButton.setOnAction(e -> onDownloadButtonClick(submission.getDocumentID()));
+    
+                submissionBox.getChildren().addAll(submissionInfo, downloadButton);
+                layout.getChildren().add(submissionBox);
+            }
+        }
+    
+        ScrollPane scrollPane = new ScrollPane(layout);
+        scrollPane.setFitToWidth(true);
+    
+        Scene scene = new Scene(scrollPane, 450, 400);
+        submissionsStage.setScene(scene);
+        submissionsStage.showAndWait();
+    }
+
+    @FXML
+    public void onDownloadButtonClick(String fileId) {
+        String directoryPath = "downloaded_files";
+
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("✅ Directory created: " + directoryPath);
+            } else {
+                showAlert("❌ Error", "Could not create directory for saving files.");
+                return;
+            }
+        }
+
+        String destinationPath = directoryPath + "/" + fileId + ".pdf";
+
+        // Download the file as PDF (you need to handle the actual export in DriveUploader)
+        DriveUploader.retrieveFile(fileId, destinationPath);
+
+        showAlert("✅ Success", "File downloaded as PDF to:\n" + destinationPath);
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     @FXML

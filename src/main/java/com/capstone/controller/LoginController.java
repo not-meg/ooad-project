@@ -133,7 +133,9 @@ public class LoginController {
 
             // Retrieve FacultyService from ApplicationContext
             FacultyService facultyService = context.getBean(FacultyService.class);
+            PhaseSubmissionService submissionService = context.getBean(PhaseSubmissionService.class);
             controller.setFacultyService(facultyService);
+            controller.setPhaseSubmissionService(submissionService);
 
             // Pass logged-in faculty ID
             controller.setLoggedInFacultyID(usernameField.getText());

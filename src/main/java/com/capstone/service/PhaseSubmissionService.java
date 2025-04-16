@@ -4,8 +4,7 @@ import com.capstone.model.PhaseSubmission;
 import com.capstone.repository.PhaseSubmissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
+import java.util.List;
 
 @Service
 public class PhaseSubmissionService {
@@ -41,4 +40,8 @@ public class PhaseSubmissionService {
             return false;
         }
     }
+
+    public List<PhaseSubmission> getSubmissionsByTeamID(String teamID) {
+        return phaseSubmissionRepository.findByTeamID(teamID);
+    }    
 }

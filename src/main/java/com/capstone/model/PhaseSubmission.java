@@ -33,7 +33,7 @@ public class PhaseSubmission {
     public String getSubmissionID() { return submissionID; }
     public String getTeamID() { return teamID; }
     public int getPhase() { return phase; }
-    public String getDocumentPath() { return documentID; }
+    public String getDocumentID() { return documentID; }
     public LocalDateTime getSubmissionDate() { return submissionDate; }
     public Float getGrade() { return grade; }
     public String getFeedback() { return feedback; }
@@ -47,7 +47,7 @@ public class PhaseSubmission {
         this.phase = phase;
     }
 
-    public void setDocumentPath(String documentID) {
+    public void setDocumentID(String documentID) {
         this.documentID = documentID;
     }
 
