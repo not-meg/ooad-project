@@ -157,6 +157,10 @@ public class DashboardController {
             case "Review Schedule":
                 System.out.println("Navigating to Review Schedule... (TODO: Implement navigation)");
                 break;
+            case "Submit to Conference":
+                System.out.println("Navigating to Conference... (TODO: Implement navigation)");
+                handleConference();
+                break;
             case "Logout":
                 System.out.println("Logging out");
                 break;
@@ -499,6 +503,11 @@ public class DashboardController {
             default:
                 return "Unknown Phase";
         }
+    }
+
+    @FXML
+    private void handleConference() {
+        
     }
 
     @FXML

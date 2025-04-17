@@ -70,6 +70,12 @@
                       -fx-cursor: hand;
                       -fx-padding: 5;"/>
 
+                <Label text="Submit to Conference" fx:id="conferenceLink" onMouseClicked="#handleNavigation" style="
+                      -fx-text-fill: white;
+                      -fx-font-size: 14px;
+                      -fx-cursor: hand;
+                      -fx-padding: 5;"/>
+
                 <Label text="Logout" fx:id="logoutLink" onMouseClicked="#handleNavigation" style="
                       -fx-text-fill: white;
                       -fx-font-size: 14px;
