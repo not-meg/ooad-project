@@ -26,6 +26,11 @@ import java.io.File;
 import java.util.List;
 import javafx.scene.layout.Region;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.capstone.CapstoneApplication;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import java.io.IOException;
+
 public class DashboardController {
 
     @FXML
@@ -43,6 +48,9 @@ public class DashboardController {
     private Label profileLink;
     @FXML
     private Label settingsLink;
+
+    @FXML
+    private Button logoutButton;  // Add this line
 
     private boolean isSidebarOpen = false;
 
@@ -164,7 +172,23 @@ public class DashboardController {
                 handleConference();
                 break;
             case "Logout":
-                System.out.println("Logging out");
+                System.out.println("Logging out...");
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
+                    loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
+                    Parent root = loader.load();
+                    
+                    Stage stage = (Stage) clickedLabel.getScene().getWindow();
+                    Scene scene = new Scene(root);
+                    stage.setScene(scene);
+                    stage.setTitle("Homepage");
+                    stage.show();
+
+                    System.out.println("✅ Successfully logged out to homepage");
+                } catch (IOException e) {
+                    System.out.println("❌ Error loading homepage: " + e.getMessage());
+                    e.printStackTrace();
+                }
                 break;
             default:
                 System.out.println("Unknown section clicked");
@@ -485,7 +509,7 @@ public class DashboardController {
             String fileId = DriveUploader.uploadFile(selectedFile);
             if (fileId != null) {
                 // Optionally log with ConferenceSubmissionService with conferenceName
-                statusLabel.setText("✅ Submission to " + conferenceName + " uploaded!\n📋 File ID: " + fileId);
+                statusLabel.setText("✅ Submission to " + conferenceName + "uploaded!\n📋 File ID: " + fileId);
                 statusLabel.setStyle("-fx-text-fill: green;");
             } else {
                 statusLabel.setText("❌ Upload failed. Please try again.");
@@ -501,8 +525,26 @@ public class DashboardController {
 
     @FXML
     private void handleLogout(ActionEvent event) {
-        System.out.println("Logging out");
-        // Implement navigation logic here (e.g., open a new window)
+        try {
+            // Create FXMLLoader with Spring's controller factory
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
+            loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
+            
+            // Load the FXML
+            Parent root = loader.load();
+            
+            // Get the current stage and set new scene
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Homepage");
+            stage.show();
+
+            System.out.println("✅ Successfully logged out to homepage");
+        } catch (IOException e) {
+            System.out.println("❌ Error loading homepage: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
