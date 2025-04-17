@@ -525,18 +525,56 @@ public class DashboardController {
             return;
         }
     
-        showConferencePopup(team.getTeamID());
+        showConferenceSelector(team.getTeamID());
     }
+
+    private void showConferenceSelector(String teamId) {
+        Stage selectorStage = new Stage();
+        selectorStage.setTitle("🎓 Select Conference");
     
-    private void showConferencePopup(String teamId) {
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER);
+    
+        Label instructionLabel = new Label("📑 Choose a conference to submit to:");
+        instructionLabel.setStyle("-fx-font-size: 16px;");
+    
+        ComboBox<String> conferenceDropdown = new ComboBox<>();
+        // You can dynamically load this list from a service or DB
+        conferenceDropdown.getItems().addAll(
+            "ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025"
+        );
+        conferenceDropdown.setPromptText("Select a conference");
+    
+        Button continueButton = new Button("📝 Continue");
+        Label warningLabel = new Label();
+    
+        continueButton.setOnAction(e -> {
+            String selectedConference = conferenceDropdown.getValue();
+            if (selectedConference == null || selectedConference.isEmpty()) {
+                warningLabel.setText("🚨 Please select a conference to proceed.");
+                warningLabel.setStyle("-fx-text-fill: red;");
+            } else {
+                selectorStage.close();
+                showConferencePopup(teamId, selectedConference); // pass selection forward!
+            }
+        });
+    
+        root.getChildren().addAll(instructionLabel, conferenceDropdown, continueButton, warningLabel);
+        Scene scene = new Scene(root, 350, 250);
+        selectorStage.setScene(scene);
+        selectorStage.show();
+    }    
+    
+    private void showConferencePopup(String teamId, String conferenceName) {
         Stage popupStage = new Stage();
-        popupStage.setTitle("📢 Conference Submission");
+        popupStage.setTitle("📢 Submit to " + conferenceName);
     
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER_LEFT);
     
-        Label titleLabel = new Label("📤 Upload Conference Material");
+        Label titleLabel = new Label("📤 Upload Material for " + conferenceName);
         titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
     
         Label fileLabel = new Label("📁 No file selected.");
@@ -558,12 +596,10 @@ public class DashboardController {
                 return;
             }
     
-            // Upload to Drive
             String fileId = DriveUploader.uploadFile(selectedFile);
-    
             if (fileId != null) {
-                // You can optionally store this info using a ConferenceSubmissionService or just log it for now
-                statusLabel.setText("✅ Conference submission uploaded successfully!\n📋 File ID: " + fileId);
+                // Optionally log with ConferenceSubmissionService with conferenceName
+                statusLabel.setText("✅ Submission to " + conferenceName + " uploaded!\n📋 File ID: " + fileId);
                 statusLabel.setStyle("-fx-text-fill: green;");
             } else {
                 statusLabel.setText("❌ Upload failed. Please try again.");
@@ -572,11 +608,10 @@ public class DashboardController {
         });
     
         root.getChildren().addAll(titleLabel, uploadButton, fileLabel, submitButton, statusLabel);
-    
         Scene scene = new Scene(root, 450, 350);
         popupStage.setScene(scene);
         popupStage.show();
-    }    
+    }       
 
     @FXML
     private void handleLogout(ActionEvent event) {
