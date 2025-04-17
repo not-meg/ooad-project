@@ -95,32 +95,37 @@ public class LoginController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/student_dashboard.fxml"));
             Parent root = loader.load();
-
+    
             // Get the controller
             DashboardController controller = loader.getController();
-
-            // Retrieve TeamService from ApplicationContext
+    
+            // Retrieve services from ApplicationContext
             TeamService teamService = context.getBean(TeamService.class);
-            controller.setTeamService(teamService);
             PhaseSubmissionService submissionService = context.getBean(PhaseSubmissionService.class);
-
+    
+            // Inject services
+            controller.setTeamService(teamService);
             controller.setSubmissionService(submissionService);
-
-            // Pass logged-in student ID
+    
+            // Inject PhaseSubmissionController
+            PhaseSubmissionController phaseSubmissionController = new PhaseSubmissionController(submissionService, teamService);
+            controller.setPhaseSubmissionController(phaseSubmissionController);
+    
+            // Pass student ID
             controller.setLoggedInStudentID(usernameField.getText());
-
+    
             // Switch scene
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Student Dashboard");
             stage.show();
-
+    
         } catch (IOException e) {
             errorLabel.setText("Error loading student dashboard.");
             errorLabel.setStyle("-fx-text-fill: red;");
             e.printStackTrace();
         }
-    }
+    }    
 
     @FXML
     private void switchToFacultyDashboard(ActionEvent event) {

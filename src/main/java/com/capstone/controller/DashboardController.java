@@ -6,8 +6,6 @@ import com.capstone.service.TeamService;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.PhaseSubmissionService;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,12 +22,10 @@ import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.util.Optional;
-import java.util.Random;
 import java.io.File;
 import java.util.List;
 import javafx.scene.layout.Region;
-import java.util.Comparator;
-
+import org.springframework.beans.factory.annotation.Autowired;
 public class DashboardController {
 
     @FXML
@@ -56,7 +52,13 @@ public class DashboardController {
 
     private TeamService teamService;
 
-    public DashboardController() {
+    public DashboardController() {}
+
+    @Autowired
+    private PhaseSubmissionController phaseSubmissionController;
+
+    public void setPhaseSubmissionController(PhaseSubmissionController controller) {
+        this.phaseSubmissionController = controller;
     }
 
     public void setTeamService(TeamService teamService) {
@@ -252,16 +254,25 @@ public class DashboardController {
 
         Label fileLabel = new Label("📁 No file selected.");
         Button uploadButton = new Button("Choose File");
-        uploadButton.setOnAction(e -> handleFileUpload());
 
+        uploadButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
+            selectedFile = fileChooser.showOpenDialog(null);
+        
+            if (selectedFile != null) {
+                fileLabel.setText("📁 " + selectedFile.getName());
+            }
+        });
+        
         Button submitButton = new Button("✅ Submit");
         Label statusLabel = new Label();
 
         submitButton.setOnAction(e -> {
             String selectedPhase = phaseComboBox.getValue();
-            String filePath = fileLabel.getText();
-            handleSubmission(selectedPhase, filePath, statusLabel);
+            handleSubmission(selectedPhase, selectedFile, statusLabel);
         });
+        
 
         VBox phaseSection = new VBox(5, phaseLabel, phaseComboBox);
         VBox uploadSection = new VBox(5, uploadButton, fileLabel);
@@ -285,146 +296,21 @@ public class DashboardController {
         }
     }
 
-    private void handleSubmission(String selectedPhase, String fileLabelText, Label statusLabel) {
-        if (selectedFile == null || selectedPhase == null) {
-            statusLabel.setText("Please select both a file and a phase.");
-            statusLabel.setStyle("-fx-text-fill: red;");
+    private void handleSubmission(String selectedPhase, File file, Label statusLabel) {
+        if (selectedPhase == null || file == null) {
+            statusLabel.setText("Please select both a phase and a file.");
             return;
         }
-    
-        // Fetch team ID
-        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
-        if (!teamOpt.isPresent()) {
-            statusLabel.setText("Team not found. Cannot submit.");
-            statusLabel.setStyle("-fx-text-fill: red;");
-            return;
-        }
-    
-        String teamId = teamOpt.get().getTeamID();
-        int selectedPhaseInt = mapPhaseToInt(selectedPhase);
-    
-        if (selectedPhaseInt < 1 || selectedPhaseInt > 4) {
-            statusLabel.setText("Invalid phase selected.");
-            statusLabel.setStyle("-fx-text-fill: red;");
-            return;
-        }
-    
-        // Get existing submissions
-        List<PhaseSubmission> existingSubs = submissionService.getSubmissionsByTeamID(teamId);
-        existingSubs.sort(Comparator.comparingInt(PhaseSubmission::getPhase)); // Ascending sort
-    
-        if (!existingSubs.isEmpty()) {
-            PhaseSubmission lastSubmission = existingSubs.get(existingSubs.size() - 1);
-            int lastPhase = lastSubmission.getPhase();
-            String lastStatus = lastSubmission.getStatus();
-    
-            if ("Rejected".equalsIgnoreCase(lastStatus)) {
-                // If rejected, must re-submit the same phase
-                if (selectedPhaseInt != lastPhase) {
-                    statusLabel.setText("You must re-submit Phase " + lastPhase + " before proceeding.");
-                    statusLabel.setStyle("-fx-text-fill: red;");
-                    return;
-                }
-            } else {
-                // If last was accepted
-                if (lastPhase == 4) {
-                    statusLabel.setText("✅ All 4 phases have already been successfully submitted!");
-                    statusLabel.setStyle("-fx-text-fill: green;");
-                    return;
-                }
-                if (selectedPhaseInt != lastPhase + 1) {
-                    statusLabel.setText("You must complete Phase " + (lastPhase + 1) + " first.");
-                    statusLabel.setStyle("-fx-text-fill: red;");
-                    return;
-                }
-            }
-        } else {
-            // No previous submissions yet, only allow Phase 1
-            if (selectedPhaseInt != 1) {
-                statusLabel.setText("You must start with Phase 1.");
-                statusLabel.setStyle("-fx-text-fill: red;");
-                return;
-            }
-        }
-    
-        // Upload file to Drive
-        String fileId = DriveUploader.uploadFile(selectedFile);
-    
-        if (fileId != null) {
-            PhaseSubmission phaseSubmission = new PhaseSubmission(
-                teamId,
-                selectedPhaseInt,
-                fileId
-            );
-    
-            boolean dbSuccess = submissionService.saveOrUpdateSubmission(phaseSubmission);
-    
-            if (dbSuccess) {
-                statusLabel.setText("✅ Successfully uploaded for phase: " + selectedPhase);
-                statusLabel.setStyle("-fx-text-fill: green;");
-                simulateAIChecksAndDisplay(statusLabel, selectedPhase, teamId, selectedPhaseInt);
-            } else {
-                statusLabel.setText("❌ Failed to save to the database.");
-                statusLabel.setStyle("-fx-text-fill: red;");
-            }
-        } else {
-            statusLabel.setText("❌ Upload failed. Please try again.");
-            statusLabel.setStyle("-fx-text-fill: red;");
-        }
-    }
-    
-    private int mapPhaseToInt(String phase) {
-        switch (phase) {
-            case "Abstract":
-                return 1;
-            case "Report":
-                return 2;
-            case "Presentation":
-                return 3;
-            case "Final Code":
-                return 4;
-            default:
-                return 0;
-        }
-    }
 
-    private void simulateAIChecksAndDisplay(Label statusLabel, String selectedPhase, String teamId, int phaseInt) {
-        statusLabel.setText(statusLabel.getText() + "\n\n🔍 Running AI and plagiarism checks...");
-    
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
-            Random rand = new Random();
-            int aiScore = rand.nextInt(18); // 0 to 30
-            int plagiarismScore = rand.nextInt(18); // 0 to 30
-    
-            StringBuilder result = new StringBuilder();
-            result.append("\n\n✅ Analysis for ").append(selectedPhase).append(" complete:")
-                  .append("\n💡 AI Detection Score: ").append(aiScore).append("%")
-                  .append("\n📄 Plagiarism Score: ").append(plagiarismScore).append("%");
-    
-            // Fetch the latest submission (assuming only one per teamId+phase combo)
-            PhaseSubmission latest = submissionService.getSubmissionByTeamIDAndPhase(teamId, phaseInt);
-    
-            if (latest != null) {
-                if (aiScore > 15 || plagiarismScore > 15) {
-                    latest.setStatus("Rejected");
-                    result.append("\n\n❌ Submission Rejected: High AI or Plagiarism score detected.");
-                    statusLabel.setStyle("-fx-text-fill: red;");
-                } else {
-                    latest.setStatus("AI Check Passed");
-                    result.append("\n\n🎉 Submission Accepted: Passed all checks.");
-                    statusLabel.setStyle("-fx-text-fill: green;");
-                }
-    
-                submissionService.updateSubmission(latest); // Save updated status
-            } else {
-                result.append("\n⚠️ Could not update submission status (not found).");
-            }
-    
-            statusLabel.setText(statusLabel.getText() + result);
-        }));
-        timeline.setCycleCount(1);
-        timeline.play();
-    } 
+        StringBuilder resultLog = new StringBuilder();
+        String result = phaseSubmissionController.submitPhase(loggedInStudentID, file, selectedPhase, resultLog);
+
+        if (result != null) {
+            statusLabel.setText(result);
+        } else {
+            statusLabel.setText(resultLog.toString()); // show details of AI/plagiarism check
+        }
+    }
 
     @FXML
     private void showTeamStatusNotification() {
@@ -585,7 +471,7 @@ public class DashboardController {
                 fileLabel.setText("📁 " + selectedFile.getName());
             }
         });
-    
+        
         Button submitButton = new Button("✅ Submit");
         Label statusLabel = new Label();
     
