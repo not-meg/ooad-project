@@ -28,6 +28,10 @@ import com.capstone.model.Student;
 import com.capstone.model.Team;
 import com.capstone.model.Admin;
 import javafx.scene.control.ChoiceBox;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import java.io.IOException;
+import com.capstone.CapstoneApplication;
 
 @Controller
 public class AdminDashboardController {
@@ -425,7 +429,27 @@ public class AdminDashboardController {
 
     @FXML
     private void handleLogout() {
-        System.out.println("Logging out... (TODO)");
-        // TODO: Implement actual logout logic and redirect to login page
+        try {
+            // Create FXMLLoader with Spring's controller factory
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
+            loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
+            
+            // Load the FXML
+            Parent root = loader.load();
+            
+            // Get the current stage from the logout button
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            
+            // Create and set the new scene
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Homepage");
+            stage.show();
+
+            System.out.println("✅ Successfully logged out to homepage");
+        } catch (IOException e) {
+            System.out.println("❌ Error loading homepage: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

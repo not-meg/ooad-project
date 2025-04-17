@@ -5,11 +5,14 @@ import com.capstone.model.Team;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.FacultyService;
 import com.capstone.service.PhaseSubmissionService;
+import com.capstone.CapstoneApplication;
 
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -23,8 +26,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.io.File;
 
@@ -287,7 +292,25 @@ public class FacultyDashboardController {
 
     @FXML
     private void handleLogout() {
-        System.out.println("Logging out...");
-        // TODO: Implement logout navigation
+        try {
+            // Create FXMLLoader and set Spring's controller factory
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
+            loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
+
+            // Load the FXML
+            Parent root = loader.load();
+            
+            // Get the current stage and set new scene
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Homepage");
+            stage.show();
+
+            System.out.println("✅ Successfully logged out to homepage");
+        } catch (IOException e) {
+            System.out.println("❌ Error loading homepage: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
