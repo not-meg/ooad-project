@@ -507,8 +507,76 @@ public class DashboardController {
 
     @FXML
     private void handleConference() {
-        
+        if (teamService == null || loggedInStudentID == null) {
+            showAlert("Error", "Team service not initialized or student not logged in.");
+            return;
+        }
+    
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+        if (!teamOpt.isPresent()) {
+            showAlert("Error", "Team not found! Please contact support.");
+            return;
+        }
+    
+        Team team = teamOpt.get();
+    
+        if (!"Accepted".equalsIgnoreCase(team.getStatus())) {
+            showAlert("Access Denied", "Only accepted teams can submit to the conference.");
+            return;
+        }
+    
+        showConferencePopup(team.getTeamID());
     }
+    
+    private void showConferencePopup(String teamId) {
+        Stage popupStage = new Stage();
+        popupStage.setTitle("📢 Conference Submission");
+    
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER_LEFT);
+    
+        Label titleLabel = new Label("📤 Upload Conference Material");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+    
+        Label fileLabel = new Label("📁 No file selected.");
+        Button uploadButton = new Button("Choose File");
+        uploadButton.setOnAction(e -> {
+            handleFileUpload();
+            if (selectedFile != null) {
+                fileLabel.setText("📁 " + selectedFile.getName());
+            }
+        });
+    
+        Button submitButton = new Button("✅ Submit");
+        Label statusLabel = new Label();
+    
+        submitButton.setOnAction(e -> {
+            if (selectedFile == null) {
+                statusLabel.setText("❌ Please select a file before submitting.");
+                statusLabel.setStyle("-fx-text-fill: red;");
+                return;
+            }
+    
+            // Upload to Drive
+            String fileId = DriveUploader.uploadFile(selectedFile);
+    
+            if (fileId != null) {
+                // You can optionally store this info using a ConferenceSubmissionService or just log it for now
+                statusLabel.setText("✅ Conference submission uploaded successfully!\n📋 File ID: " + fileId);
+                statusLabel.setStyle("-fx-text-fill: green;");
+            } else {
+                statusLabel.setText("❌ Upload failed. Please try again.");
+                statusLabel.setStyle("-fx-text-fill: red;");
+            }
+        });
+    
+        root.getChildren().addAll(titleLabel, uploadButton, fileLabel, submitButton, statusLabel);
+    
+        Scene scene = new Scene(root, 450, 350);
+        popupStage.setScene(scene);
+        popupStage.show();
+    }    
 
     @FXML
     private void handleLogout(ActionEvent event) {
