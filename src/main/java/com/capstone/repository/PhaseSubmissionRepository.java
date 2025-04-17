@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface PhaseSubmissionRepository extends MongoRepository<PhaseSubmission, String> {
     List<PhaseSubmission> findByTeamID(String teamID);
+
+    PhaseSubmission findByTeamIDAndPhase(String teamID, int phase);
 }
