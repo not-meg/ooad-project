@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.List;
 import java.util.Set;
+import java.util.Comparator;
 import java.util.HashSet;
 
 @Service
@@ -143,4 +144,24 @@ public class TeamService {
         teamRepository.save(team);
     }
 
+    public String generateNextTeamID() {
+        List<Team> allTeams = getAllTeams();
+    
+        if (allTeams.isEmpty()) {
+            return "T001";
+        }
+    
+        // Sort teams by team ID descending
+        Optional<String> maxTeamID = allTeams.stream()
+            .map(Team::getTeamID)
+            .filter(id -> id.matches("T\\d+")) // Ensure format is T001, T002...
+            .max(Comparator.comparingInt(id -> Integer.parseInt(id.substring(1))));
+    
+        if (maxTeamID.isPresent()) {
+            int lastNumber = Integer.parseInt(maxTeamID.get().substring(1));
+            return String.format("T%03d", lastNumber + 1);
+        }
+    
+        return "T001"; // fallback
+    }    
 }
