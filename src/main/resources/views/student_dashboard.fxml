@@ -64,12 +64,6 @@
                       -fx-cursor: hand;
                       -fx-padding: 5;"/>
 
-                <Label text="Review Schedule" fx:id="scheduleLink" onMouseClicked="#handleNavigation" style="
-                      -fx-text-fill: white;
-                      -fx-font-size: 14px;
-                      -fx-cursor: hand;
-                      -fx-padding: 5;"/>
-
                 <Label text="Submit to Conference" fx:id="conferenceLink" onMouseClicked="#handleNavigation" style="
                       -fx-text-fill: white;
                       -fx-font-size: 14px;

@@ -165,9 +165,6 @@ public class DashboardController {
                 System.out.println("Opening Results popup...");
                 showResultsPopup();
                 break;
-            case "Review Schedule":
-                System.out.println("Navigating to Review Schedule... (TODO: Implement navigation)");
-                break;
             case "Submit to Conference":
                 System.out.println("Navigating to Conference... (TODO: Implement navigation)");
                 handleConference();
