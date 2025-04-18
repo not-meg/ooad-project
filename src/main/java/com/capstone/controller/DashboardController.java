@@ -52,8 +52,6 @@ public class DashboardController {
     @FXML
     private Label dashboardLink;
     @FXML
-    private Label profileLink;
-    @FXML
     private Label settingsLink;
 
     @FXML
@@ -158,9 +156,6 @@ public class DashboardController {
                 } else {
                     System.out.println("⚠️ Cannot reload dashboard — student not logged in.");
                 }
-                break;
-            case "Profile":
-                System.out.println("Navigating to Profile... (TODO: Implement navigation)");
                 break;
             case "Notification":
                 System.out.println("Navigating to Notification... ");

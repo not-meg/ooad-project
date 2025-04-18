@@ -33,12 +33,6 @@
                       -fx-font-size: 14px;
                       -fx-cursor: hand;
                       -fx-padding: 5;"/>
-                      
-                <Label text="Profile" fx:id="profileLink" onMouseClicked="#handleNavigation" style="
-                      -fx-text-fill: white;
-                      -fx-font-size: 14px;
-                      -fx-cursor: hand;
-                      -fx-padding: 5;"/>
                 
                 <Label text="Notification" fx:id="notificationLink" onMouseClicked="#handleNavigation" style="
                       -fx-text-fill: white;
