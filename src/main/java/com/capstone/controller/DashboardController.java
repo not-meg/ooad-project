@@ -162,7 +162,8 @@ public class DashboardController {
                 handleMentorFeedback();
                 break;
             case "Results":
-                System.out.println("Navigating to Results... (TODO: Implement navigation)");
+                System.out.println("Opening Results popup...");
+                showResultsPopup();
                 break;
             case "Review Schedule":
                 System.out.println("Navigating to Review Schedule... (TODO: Implement navigation)");
@@ -334,6 +335,74 @@ public class DashboardController {
         } else {
             statusLabel.setText(resultLog.toString()); // show details of AI/plagiarism check
         }
+    }
+
+    private void showResultsPopup() {
+        Stage popupStage = new Stage();
+        popupStage.setTitle("📊 Academic Results");
+
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.TOP_CENTER);
+
+        Label titleLabel = new Label("📚 Phase-wise Results");
+        titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+
+        Label selectPhaseLabel = new Label("Select Phase:");
+        ComboBox<String> phaseDropdown = new ComboBox<>();
+        phaseDropdown.getItems().addAll("Phase 1", "Phase 2", "Phase 3", "Phase 4", "Phase 5");
+        phaseDropdown.setPromptText("Choose Phase");
+
+        Label isa1Label = new Label("ISA 1: -");
+        Label isa2Label = new Label("ISA 2: -");
+        Label esaLabel = new Label("ESA  : -");
+
+        VBox resultSection = new VBox(10, isa1Label, isa2Label, esaLabel);
+        resultSection.setPadding(new Insets(10));
+        resultSection.setStyle("-fx-border-color: #aaa; -fx-border-width: 1; -fx-border-radius: 5; -fx-padding: 10;");
+        resultSection.setAlignment(Pos.CENTER_LEFT);
+
+        phaseDropdown.setOnAction(e -> {
+            String selected = phaseDropdown.getValue();
+            // You can fetch real data here using service call if needed
+            switch (selected) {
+                case "Phase 1":
+                    isa1Label.setText("ISA 1: 12");
+                    isa2Label.setText("ISA 2: 14");
+                    esaLabel.setText("ESA  : 24");
+                    break;
+                case "Phase 2":
+                    isa1Label.setText("ISA 1: 13");
+                    isa2Label.setText("ISA 2: 15");
+                    esaLabel.setText("ESA  : 26");
+                    break;
+                case "Phase 3":
+                    isa1Label.setText("ISA 1: 11");
+                    isa2Label.setText("ISA 2: 12");
+                    esaLabel.setText("ESA  : 22");
+                    break;
+                case "Phase 4":
+                    isa1Label.setText("ISA 1: 14");
+                    isa2Label.setText("ISA 2: 15");
+                    esaLabel.setText("ESA  : 28");
+                    break;
+                case "Phase 5":
+                    isa1Label.setText("ISA 1: 15");
+                    isa2Label.setText("ISA 2: 15");
+                    esaLabel.setText("ESA  : 30");
+                    break;
+                default:
+                    isa1Label.setText("ISA 1: -");
+                    isa2Label.setText("ISA 2: -");
+                    esaLabel.setText("ESA  : -");
+            }
+        });
+
+        root.getChildren().addAll(titleLabel, selectPhaseLabel, phaseDropdown, resultSection);
+
+        Scene scene = new Scene(root, 400, 300);
+        popupStage.setScene(scene);
+        popupStage.show();
     }
 
     @FXML
