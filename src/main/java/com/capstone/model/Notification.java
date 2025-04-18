@@ -1,65 +1,101 @@
 package com.capstone.model;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+
+import java.util.Date;
 import java.util.List;
 
 @Document(collection = "notifications")
 public class Notification {
 
     @Id
-    @Indexed(unique = true)  // Enforces unique notification IDs in MongoDB
-    private String notificationId;
+    private String id;
 
+    @Field("team_id")
     private String teamId;
-    private String reviewDate;
-    private String reviewTime;
-    private String facultyId;
-    private List<String> panelMemberIds;
+    
+    private String faculty_id;
+    private List<String> panel_members_id;
+    private String title;
     private String comments;
-    private String additionalInfo;
-    private String createdAt;
-    private String expireAt;
+    private String additional_info;
+    private Date created_at;
+    private Date expire_at;
 
-    public Notification() {}
+    // Getters and Setters
 
-    public Notification(String notificationId, String teamId, String reviewDate, String reviewTime,
-                        String facultyId, List<String> panelMemberIds, String comments, 
-                        String additionalInfo, String createdAt, String expireAt) {
-        this.notificationId = notificationId;
-        this.teamId = teamId;
-        this.reviewDate = reviewDate;
-        this.reviewTime = reviewTime;
-        this.facultyId = facultyId;
-        this.panelMemberIds = panelMemberIds;
-        this.comments = comments;
-        this.additionalInfo = additionalInfo;
-        this.createdAt = createdAt;
-        this.expireAt = expireAt;
+    public String getId() {
+        return id;
     }
 
-    // Getters
-    public String getNotificationId() { return notificationId; }
-    public String getTeamId() { return teamId; }
-    public String getReviewDate() { return reviewDate; }
-    public String getReviewTime() { return reviewTime; }
-    public String getFacultyId() { return facultyId; }
-    public List<String> getPanelMemberIds() { return panelMemberIds; }
-    public String getComments() { return comments; }
-    public String getAdditionalInfo() { return additionalInfo; }
-    public String getCreatedAt() { return createdAt; }
-    public String getExpireAt() { return expireAt; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    // Setters
-    public void setNotificationId(String notificationId) { this.notificationId = notificationId; }
-    public void setTeamId(String teamId) { this.teamId = teamId; }
-    public void setReviewDate(String reviewDate) { this.reviewDate = reviewDate; }
-    public void setReviewTime(String reviewTime) { this.reviewTime = reviewTime; }
-    public void setFacultyId(String facultyId) { this.facultyId = facultyId; }
-    public void setPanelMemberIds(List<String> panelMemberIds) { this.panelMemberIds = panelMemberIds; }
-    public void setComments(String comments) { this.comments = comments; }
-    public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-    public void setExpireAt(String expireAt) { this.expireAt = expireAt; }
+    public String getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(String teamId) {
+        this.teamId = teamId;
+    }
+
+    public String getFaculty_id() {
+        return faculty_id;
+    }
+
+    public void setFaculty_id(String faculty_id) {
+        this.faculty_id = faculty_id;
+    }
+
+    public List<String> getPanel_members_id() {
+        return panel_members_id;
+    }
+
+    public void setPanel_members_id(List<String> panel_members_id) {
+        this.panel_members_id = panel_members_id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
+    public String getAdditional_info() {
+        return additional_info;
+    }
+
+    public void setAdditional_info(String additional_info) {
+        this.additional_info = additional_info;
+    }
+
+    public Date getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(Date created_at) {
+        this.created_at = created_at;
+    }
+
+    public Date getExpire_at() {
+        return expire_at;
+    }
+
+    public void setExpire_at(Date expire_at) {
+        this.expire_at = expire_at;
+    }
 }
