@@ -5,6 +5,8 @@ import com.capstone.model.Team;
 import com.capstone.service.TeamService;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.PhaseSubmissionService;
+import com.capstone.service.NotificationService;
+import com.capstone.model.Notification;
 
 import javafx.animation.TranslateTransition;
 import javafx.event.ActionEvent;
@@ -30,6 +32,11 @@ import com.capstone.CapstoneApplication;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import java.io.IOException;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import java.util.Date;
 
 public class DashboardController {
 
@@ -59,6 +66,7 @@ public class DashboardController {
     private String facultyName;
 
     private TeamService teamService;
+    private NotificationService notificationService;
 
     public DashboardController() {}
 
@@ -71,6 +79,11 @@ public class DashboardController {
 
     public void setTeamService(TeamService teamService) {
         this.teamService = teamService;
+    }
+
+    @Autowired
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     private PhaseSubmissionService submissionService;
@@ -150,8 +163,9 @@ public class DashboardController {
                 System.out.println("Navigating to Profile... (TODO: Implement navigation)");
                 break;
             case "Notification":
-                System.out.println("Navigating to Notification... (TODO: Implement navigation)");
-                showTeamStatusNotification();
+                System.out.println("Navigating to Notification... ");
+                //showTeamStatusNotification();
+                showNotificationsPopup();
                 break;
             case "Submission":
                 System.out.println("Opening Submissions popup...");
@@ -347,7 +361,7 @@ public class DashboardController {
 
         Label selectPhaseLabel = new Label("Select Phase:");
         ComboBox<String> phaseDropdown = new ComboBox<>();
-        phaseDropdown.getItems().addAll("Phase 1", "Phase 2", "Phase 3", "Phase 4", "Phase 5");
+        phaseDropdown.getItems().addAll("Phase 1", "Phase 2", "Phase 3", "Phase 4");
         phaseDropdown.setPromptText("Choose Phase");
 
         Label isa1Label = new Label("ISA 1: -");
@@ -382,11 +396,6 @@ public class DashboardController {
                     isa1Label.setText("ISA 1: 14");
                     isa2Label.setText("ISA 2: 15");
                     esaLabel.setText("ESA  : 28");
-                    break;
-                case "Phase 5":
-                    isa1Label.setText("ISA 1: 15");
-                    isa2Label.setText("ISA 2: 15");
-                    esaLabel.setText("ESA  : 30");
                     break;
                 default:
                     isa1Label.setText("ISA 1: -");
@@ -424,6 +433,77 @@ public class DashboardController {
             showAlert("Team Not Found", "You are not part of any team.");
         }
     }
+
+    private void showNotificationsPopup() {
+        if (teamService == null || loggedInStudentID == null) {
+            showAlert("Error", "Team service or student not initialized.");
+            return;
+        }
+
+        if (notificationService == null) {
+            notificationService = CapstoneApplication.getApplicationContext().getBean(NotificationService.class);
+        }
+
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+        if (!teamOpt.isPresent()) {
+            showAlert("Team Not Found", "You are not assigned to any team yet.");
+            return;
+        }
+
+        String teamId = teamOpt.get().getTeamID();
+        List<Notification> notifications = notificationService.getNotificationsByTeamId(teamId);
+
+        Stage popupStage = new Stage();
+        popupStage.setTitle("📢 Team Notifications");
+
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.TOP_CENTER);
+
+        Label title = new Label("🔔 Notifications");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+
+        TableView<Notification> table = new TableView<>();
+        table.setPrefWidth(800);
+
+        TableColumn<Notification, String> titleCol = new TableColumn<>("Title");
+        titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
+        titleCol.setPrefWidth(200);
+
+        TableColumn<Notification, String> commentsCol = new TableColumn<>("Comments");
+        commentsCol.setCellValueFactory(new PropertyValueFactory<>("comments"));
+        commentsCol.setPrefWidth(300);
+
+        TableColumn<Notification, String> createdCol = new TableColumn<>("Created At");
+        createdCol.setCellValueFactory(cellData -> {
+            Date createdAt = cellData.getValue().getCreated_at();
+            String formatted = createdAt != null ? createdAt.toString() : "N/A";
+            return new ReadOnlyStringWrapper(formatted);
+        });
+        createdCol.setPrefWidth(150);
+
+        TableColumn<Notification, String> expireCol = new TableColumn<>("Expires At");
+        expireCol.setCellValueFactory(cellData -> {
+            Date expireAt = cellData.getValue().getExpire_at();
+            String formatted = expireAt != null ? expireAt.toString() : "N/A";
+            return new ReadOnlyStringWrapper(formatted);
+        });
+        expireCol.setPrefWidth(150);
+
+        table.getColumns().addAll(titleCol, commentsCol, createdCol, expireCol);
+        table.getItems().addAll(notifications);
+
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction(e -> popupStage.close());
+
+        root.getChildren().addAll(title, table, closeButton);
+
+        Scene scene = new Scene(root, 850, 500);
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
+
+
     
     @FXML
     private void handleMentorFeedback() {
