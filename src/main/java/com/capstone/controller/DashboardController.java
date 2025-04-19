@@ -37,6 +37,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import java.util.Date;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.ContentDisplay;
+
 
 public class DashboardController {
 
@@ -460,32 +464,49 @@ public class DashboardController {
 
         TableView<Notification> table = new TableView<>();
         table.setPrefWidth(800);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        TableColumn<Notification, String> titleCol = new TableColumn<>("Title");
-        titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-        titleCol.setPrefWidth(200);
+        TableColumn<Notification, Notification> mainColumn = new TableColumn<>("");
+        mainColumn.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
 
-        TableColumn<Notification, String> commentsCol = new TableColumn<>("Comments");
-        commentsCol.setCellValueFactory(new PropertyValueFactory<>("comments"));
-        commentsCol.setPrefWidth(300);
+        mainColumn.setCellFactory(col -> new TableCell<>() {
+            private final VBox vbox = new VBox(5);
+            private final Label titleLabel = new Label();
+            private final Label commentLabel = new Label();
+            private final Label dateLabel = new Label();
+            private final Button container = new Button();
 
-        TableColumn<Notification, String> createdCol = new TableColumn<>("Created At");
-        createdCol.setCellValueFactory(cellData -> {
-            Date createdAt = cellData.getValue().getCreated_at();
-            String formatted = createdAt != null ? createdAt.toString() : "N/A";
-            return new ReadOnlyStringWrapper(formatted);
+            {
+                vbox.setAlignment(Pos.CENTER_LEFT);
+                vbox.setPadding(new Insets(10));
+                vbox.getChildren().addAll(titleLabel, commentLabel, dateLabel);
+
+                titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+                commentLabel.setStyle("-fx-font-size: 13px;");
+                dateLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: grey;");
+
+                container.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+                container.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                container.setGraphic(vbox);
+            }
+
+            @Override
+            protected void updateItem(Notification item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    titleLabel.setText(item.getTitle());
+                    commentLabel.setText(item.getComments());
+                    dateLabel.setText("Posted on: " + item.getCreated_at().toString());
+
+                    container.setOnAction(e -> showNotificationDetailsPopup(item));
+                    setGraphic(container);
+                }
+            }
         });
-        createdCol.setPrefWidth(150);
 
-        TableColumn<Notification, String> expireCol = new TableColumn<>("Expires At");
-        expireCol.setCellValueFactory(cellData -> {
-            Date expireAt = cellData.getValue().getExpire_at();
-            String formatted = expireAt != null ? expireAt.toString() : "N/A";
-            return new ReadOnlyStringWrapper(formatted);
-        });
-        expireCol.setPrefWidth(150);
-
-        table.getColumns().addAll(titleCol, commentsCol, createdCol, expireCol);
+        table.getColumns().add(mainColumn);
         table.getItems().addAll(notifications);
 
         Button closeButton = new Button("Close");
@@ -493,9 +514,38 @@ public class DashboardController {
 
         root.getChildren().addAll(title, table, closeButton);
 
-        Scene scene = new Scene(root, 850, 500);
+        Scene scene = new Scene(root, 850, 600);
         popupStage.setScene(scene);
         popupStage.show();
+    }
+
+    private void showNotificationDetailsPopup(Notification notification) {
+        Stage detailsStage = new Stage();
+        detailsStage.setTitle("📄 Notification Details");
+
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(20));
+
+        Label titleLabel = new Label("📌 " + notification.getTitle());
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label commentLabel = new Label("📝 Comments: " + notification.getComments());
+        commentLabel.setWrapText(true);
+
+        Label infoLabel = new Label("ℹ️ Additional Info: " + notification.getAdditional_info());
+        infoLabel.setWrapText(true);
+
+        Label dateLabel = new Label("📅 Created At: " + notification.getCreated_at());
+        Label expireLabel = new Label("⏳ Expires At: " + notification.getExpire_at());
+
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction(e -> detailsStage.close());
+
+        root.getChildren().addAll(titleLabel, commentLabel, infoLabel, dateLabel, expireLabel, closeButton);
+
+        Scene scene = new Scene(root, 500, 300);
+        detailsStage.setScene(scene);
+        detailsStage.show();
     }
 
 
