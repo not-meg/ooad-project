@@ -11,6 +11,9 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.TableRow;
+import javafx.geometry.Pos;
 import javafx.util.Duration;
 
 import javafx.scene.control.TableColumn;
@@ -402,43 +405,100 @@ public class AdminDashboardController {
     }
 
     private void handleScheduleView() {
-        if (teamService == null) {
-            System.out.println("Error: teamService is not set!");
-            return;
-        }
-
-        Stage popupStage = new Stage();
-        popupStage.setTitle("All Teams");
-
-        VBox root = new VBox(10);
-        root.setPadding(new Insets(10));
-
-        TableView<Team> teamTable = new TableView<>();
-
-        TableColumn<Team, String> teamIdCol = new TableColumn<>("Team ID");
-        teamIdCol.setCellValueFactory(new PropertyValueFactory<>("teamID"));
-        teamIdCol.setPrefWidth(150);
-
-        TableColumn<Team, String> facultyIdCol = new TableColumn<>("Faculty ID");
-        facultyIdCol.setCellValueFactory(new PropertyValueFactory<>("facultyID"));
-        facultyIdCol.setPrefWidth(150);
-
-        teamTable.getColumns().addAll(teamIdCol, facultyIdCol);
-
-        // ✅ Filter only teams with status "Accepted"
-        List<Team> acceptedTeams = teamService.getAllTeams()
-            .stream()
-            .filter(team -> "Accepted".equalsIgnoreCase(team.getStatus()))
-            .toList();
-
-        teamTable.getItems().addAll(acceptedTeams);
-
-        root.getChildren().add(teamTable);
-
-        Scene scene = new Scene(root, 400, 600);
-        popupStage.setScene(scene);
-        popupStage.show();
+    if (teamService == null) {
+        System.out.println("Error: teamService is not set!");
+        return;
     }
+
+    Stage popupStage = new Stage();
+    popupStage.setTitle("All Teams");
+
+    VBox root = new VBox(10);
+    root.setPadding(new Insets(10));
+
+    TableView<Team> teamTable = new TableView<>();
+
+    // Team ID Column
+    TableColumn<Team, String> teamIdCol = new TableColumn<>("Team ID");
+    teamIdCol.setCellValueFactory(new PropertyValueFactory<>("teamID"));
+    teamIdCol.setPrefWidth(150);
+
+    // Faculty ID Column
+    TableColumn<Team, String> facultyIdCol = new TableColumn<>("Faculty ID");
+    facultyIdCol.setCellValueFactory(new PropertyValueFactory<>("facultyID"));
+    facultyIdCol.setPrefWidth(150);
+
+    // Status Column
+    TableColumn<Team, String> statusCol = new TableColumn<>("Status");
+    statusCol.setCellValueFactory(param -> {
+        // Set default status as "Pending"
+        return new SimpleStringProperty("Pending");
+    });
+    statusCol.setPrefWidth(150);
+    
+    // Adjust table width to ensure all columns fit properly
+    teamTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+    // Add the columns to the table
+    teamTable.getColumns().addAll(teamIdCol, facultyIdCol, statusCol);
+
+    // Filter only teams with status "Accepted"
+    List<Team> acceptedTeams = teamService.getAllTeams()
+        .stream()
+        .filter(team -> "Accepted".equalsIgnoreCase(team.getStatus()))
+        .toList();
+
+    teamTable.getItems().addAll(acceptedTeams);
+
+    // Set each row to be clickable (button style)
+    teamTable.setRowFactory(tv -> {
+        TableRow<Team> row = new TableRow<>();
+        row.setOnMouseClicked(event -> {
+            if (!row.isEmpty()) {
+                Team team = row.getItem();
+                openScheduleReviewPopup(team);  // Open the popup on row click
+            }
+        });
+        return row;
+    });
+
+    root.getChildren().add(teamTable);
+
+    Scene scene = new Scene(root, 400, 600);
+    popupStage.setScene(scene);
+    popupStage.show();
+}
+
+// Method to open the "Schedule Review" pop-up window
+private void openScheduleReviewPopup(Team team) {
+    Stage schedulePopup = new Stage();
+    schedulePopup.setTitle("Schedule Review");
+
+    VBox scheduleRoot = new VBox(10);
+    scheduleRoot.setPadding(new Insets(20));
+
+    // Team ID and Faculty ID labels
+    Label teamIdLabel = new Label("Team ID: " + team.getTeamID());
+    Label facultyIdLabel = new Label("Faculty ID: " + team.getFacultyID());
+
+    // Center the labels and remove bold font style
+    teamIdLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-alignment: center;");
+    facultyIdLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-alignment: center;");
+
+    // Add labels to the VBox
+    scheduleRoot.getChildren().addAll(teamIdLabel, facultyIdLabel);
+
+    // Set alignment of the labels in the VBox to center
+    VBox.setMargin(teamIdLabel, new Insets(0, 0, 10, 0));
+    VBox.setMargin(facultyIdLabel, new Insets(0, 0, 10, 0));
+
+    // Center the VBox content
+    scheduleRoot.setAlignment(Pos.CENTER);
+
+    Scene scheduleScene = new Scene(scheduleRoot, 300, 200);
+    schedulePopup.setScene(scheduleScene);
+    schedulePopup.show();
+}
 
 
     @FXML
