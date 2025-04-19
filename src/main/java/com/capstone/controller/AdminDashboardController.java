@@ -140,6 +140,20 @@ public class AdminDashboardController {
         switch (id) {
             case "homeLink":
                 System.out.println("Navigating to Home...");
+                // Close the sidebar if open
+                if (isSidebarOpen) {
+                    TranslateTransition transition = new TranslateTransition(Duration.millis(300), sidebar);
+                    transition.setToX(-200);
+                    transition.play();
+                    isSidebarOpen = false;
+                }
+
+                // Reload dashboard details using stored student ID
+                if (loggedInAdminID != null) {
+                    loadAdminDetails();
+                } else {
+                    System.out.println("⚠️ Cannot reload dashboard — student not logged in.");
+                }
                 break;
 
             case "usersLink":

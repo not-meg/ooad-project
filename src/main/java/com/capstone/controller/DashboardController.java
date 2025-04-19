@@ -144,7 +144,6 @@ public class DashboardController {
         switch (section) {
             case "Home":
                 System.out.println("Navigating to Dashboard..");
-                System.out.println("Navigating to Dashboard...");
 
                 // Close the sidebar if open
                 if (isSidebarOpen) {
