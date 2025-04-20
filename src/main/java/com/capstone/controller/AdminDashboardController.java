@@ -9,10 +9,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import java.util.UUID;
+import java.util.Arrays;
+import java.time.LocalDate;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.beans.property.SimpleStringProperty;
+import org.springframework.beans.factory.annotation.Autowired;
 import javafx.scene.control.TableRow;
 import javafx.geometry.Pos;
 import javafx.util.Duration;
@@ -34,10 +38,12 @@ import javafx.scene.text.Text;
 import org.springframework.stereotype.Controller;
 import com.capstone.service.AdminService;
 import com.capstone.service.TeamService;
+import com.capstone.service.ReviewService; 
 import com.capstone.model.Faculty;
 import com.capstone.model.Student;
 import com.capstone.model.Team;
 import com.capstone.model.Admin;
+import com.capstone.model.Review; 
 import javafx.scene.control.ChoiceBox;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -78,6 +84,8 @@ public class AdminDashboardController {
 
     private boolean isSidebarOpen = false;
     private String loggedInAdminID;
+    private Stage schedulePopupStage; // To close the popup after submission
+    private Team currentTeamForSchedule;
 
     public AdminDashboardController() {
     }
@@ -93,6 +101,15 @@ public class AdminDashboardController {
         this.teamService = teamService;
     }
 
+    @Autowired
+    private ReviewService reviewService;
+
+    // Remove or modify your existing setter to keep the autowired reference
+    public void setReviewService(ReviewService reviewService) {
+        System.out.println("ReviewService successfully injected: " + reviewService);
+        this.reviewService = reviewService;
+    }
+
     public void setLoggedInAdminID(String adminID) {
         this.loggedInAdminID = adminID;
         loadAdminDetails();
@@ -101,6 +118,7 @@ public class AdminDashboardController {
     @FXML
     public void initialize() {
         System.out.println("AdminDashboardController initialized!");
+        System.out.println("ReviewService status: " + (reviewService != null ? "injected" : "not injected"));
     }
 
     private void loadAdminDetails() {
@@ -413,73 +431,74 @@ public class AdminDashboardController {
         popupStage.show();
     }
 
-    private void handleScheduleView() {
-    if (teamService == null) {
-        System.out.println("Error: teamService is not set!");
-        return;
-    }
+//     
 
-    Stage popupStage = new Stage();
-    popupStage.setTitle("All Teams");
+private void handleScheduleView() {
+        if (teamService == null) {
+            System.out.println("Error: teamService is not set!");
+            return;
+        }
 
-    VBox root = new VBox(10);
-    root.setPadding(new Insets(10));
+        Stage popupStage = new Stage();
+        popupStage.setTitle("Schedule Review");
 
-    TableView<Team> teamTable = new TableView<>();
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
 
-    // Team ID Column
-    TableColumn<Team, String> teamIdCol = new TableColumn<>("Team ID");
-    teamIdCol.setCellValueFactory(new PropertyValueFactory<>("teamID"));
-    teamIdCol.setPrefWidth(150);
+        TableView<Team> teamTable = new TableView<>();
 
-    // Faculty ID Column
-    TableColumn<Team, String> facultyIdCol = new TableColumn<>("Faculty ID");
-    facultyIdCol.setCellValueFactory(new PropertyValueFactory<>("facultyID"));
-    facultyIdCol.setPrefWidth(150);
+        // Team ID Column
+        TableColumn<Team, String> teamIdCol = new TableColumn<>("Team ID");
+        teamIdCol.setCellValueFactory(new PropertyValueFactory<>("teamID"));
+        teamIdCol.setPrefWidth(150);
 
-    // Status Column
-    TableColumn<Team, String> statusCol = new TableColumn<>("Status");
-    statusCol.setCellValueFactory(param -> {
-        // Set default status as "Pending"
-        return new SimpleStringProperty("Pending");
-    });
-    statusCol.setPrefWidth(150);
-    
-    // Adjust table width to ensure all columns fit properly
-    teamTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        // Faculty ID Column
+        TableColumn<Team, String> facultyIdCol = new TableColumn<>("Faculty ID");
+        facultyIdCol.setCellValueFactory(new PropertyValueFactory<>("facultyID"));
+        facultyIdCol.setPrefWidth(150);
 
-    // Add the columns to the table
-    teamTable.getColumns().addAll(teamIdCol, facultyIdCol, statusCol);
+        // Status Column
+        TableColumn<Team, String> statusCol = new TableColumn<>("Status");
+        statusCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getStatus()));
+        statusCol.setPrefWidth(150);
 
-    // Filter only teams with status "Accepted"
-    List<Team> acceptedTeams = teamService.getAllTeams()
-        .stream()
-        .filter(team -> "Accepted".equalsIgnoreCase(team.getStatus()))
-        .toList();
+        // Adjust table width to ensure all columns fit properly
+        teamTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-    teamTable.getItems().addAll(acceptedTeams);
+        // Add the columns to the table
+        teamTable.getColumns().addAll(teamIdCol, facultyIdCol, statusCol);
 
-    // Set each row to be clickable (button style)
-    teamTable.setRowFactory(tv -> {
-        TableRow<Team> row = new TableRow<>();
-        row.setOnMouseClicked(event -> {
-            if (!row.isEmpty()) {
-                Team team = row.getItem();
-                openScheduleReviewPopup(team);  // Open the popup on row click
-            }
+        // Filter only teams with status "Accepted"
+        List<Team> acceptedTeams = teamService.getAllTeams()
+                .stream()
+                .filter(team -> "Accepted".equalsIgnoreCase(team.getStatus()))
+                .toList();
+
+        teamTable.getItems().addAll(acceptedTeams);
+
+        // Set each row to be clickable (button style)
+        teamTable.setRowFactory(tv -> {
+            TableRow<Team> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (!row.isEmpty()) {
+                    Team team = row.getItem();
+                    currentTeamForSchedule = team; // Store the selected team
+                    openScheduleReviewPopup(team);  // Open the popup on row click
+                }
+            });
+            return row;
         });
-        return row;
-    });
 
-    root.getChildren().add(teamTable);
+        root.getChildren().add(teamTable);
 
-    Scene scene = new Scene(root, 400, 600);
-    popupStage.setScene(scene);
-    popupStage.show();
-}
+        Scene scene = new Scene(root, 400, 600);
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
 
 private void openScheduleReviewPopup(Team team) {
     Stage schedulePopup = new Stage();
+    schedulePopupStage = schedulePopup; // Store the stage for later closing
     schedulePopup.setTitle("Schedule Review");
 
     VBox scheduleRoot = new VBox(15);
@@ -495,7 +514,7 @@ private void openScheduleReviewPopup(Team team) {
     // Phase dropdown
     Label phaseLabel = new Label("Phase:");
     ComboBox<String> phaseComboBox = new ComboBox<>();
-    phaseComboBox.getItems().addAll("Phase 1", "Phase 2", "Phase 3", "Phase 4");
+    phaseComboBox.getItems().addAll("1", "2", "3", "4"); // Store phase as string for simplicity in Review model
     phaseComboBox.setPrefWidth(200);
     phaseComboBox.setPromptText("Select Phase");
 
@@ -519,6 +538,7 @@ private void openScheduleReviewPopup(Team team) {
     // Review Date picker
     Label dateLabel = new Label("Review Date:");
     DatePicker datePicker = new DatePicker();
+    datePicker.setPrefWidth(200);
 
     // Review Time picker (using ComboBox for hours and minutes)
     Label timeLabel = new Label("Review Time:");
@@ -543,21 +563,87 @@ private void openScheduleReviewPopup(Team team) {
 
     timeBox.getChildren().addAll(hourCombo, minuteCombo);
 
+    // Debugging line: Check the value of reviewService
+    System.out.println("Inside openScheduleReviewPopup, before submit button action: " + this.reviewService);
+
+    // Submit button
+    Button submitButton = new Button("Submit Schedule");
+    submitButton.setOnAction(event -> handleScheduleSubmit(
+            phaseComboBox.getValue(),
+            panelMembersComboBox.getValue(),
+            titleField.getText(),
+            datePicker.getValue(),
+            hourCombo.getValue(),
+            minuteCombo.getValue(),
+            team
+    ));
+    submitButton.setStyle("-fx-padding: 10 20; -fx-font-size: 14px; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;");
+
     // Add everything to the form
     scheduleRoot.getChildren().addAll(
-        teamIdLabel,
-        facultyIdLabel,
-        phaseLabel, phaseComboBox,
-        panelMembersLabel, panelMembersComboBox,
-        titleLabel, titleField,
-        dateLabel, datePicker,
-        timeLabel, timeBox
+            teamIdLabel,
+            facultyIdLabel,
+            phaseLabel, phaseComboBox,
+            panelMembersLabel, panelMembersComboBox,
+            titleLabel, titleField,
+            dateLabel, datePicker,
+            timeLabel, timeBox,
+            submitButton
     );
 
-    Scene scheduleScene = new Scene(scheduleRoot, 350, 450);
+    Scene scheduleScene = new Scene(scheduleRoot, 350, 500); // Increased height to accommodate the button
     schedulePopup.setScene(scheduleScene);
     schedulePopup.show();
 }
+
+private void handleScheduleSubmit(String phase, String panelMemberId, String title, 
+                                LocalDate reviewDate, String hour, String minute, Team team) {
+    System.out.println("ReviewService in handleScheduleSubmit: " + this.reviewService);
+    
+    if (this.reviewService == null) {
+        System.out.println("ReviewService is null, attempting to get from application context");
+        // Try to manually get the service from the application context
+        this.reviewService = CapstoneApplication.getApplicationContext().getBean(ReviewService.class);
+        
+        if (this.reviewService == null) {
+            return;
+        }
+    }
+    
+    // Input validation
+    if (phase == null || panelMemberId == null || title == null || 
+        reviewDate == null || hour == null || minute == null) {
+        return;
+    }
+    
+    // Create the review object
+    String reviewTime = String.format("%s:%s", hour, minute);
+    
+    Review newReview = new Review();
+    newReview.setId(UUID.randomUUID().toString());
+    newReview.setTeamId(team.getTeamID());
+    newReview.setFacultyId(team.getFacultyID());
+    newReview.setPanelMembersId(Arrays.asList(panelMemberId));
+    newReview.setPhase(Integer.parseInt(phase));
+    newReview.setTitle(title);
+    newReview.setReviewDate(reviewDate);
+    newReview.setReviewTime(reviewTime);
+    newReview.setStatus("Scheduled");
+    
+    try {
+        Review savedReview = reviewService.saveReview(newReview);
+        System.out.println("Review saved successfully: " + savedReview.getId());
+        
+        // Close the popup
+        if (schedulePopupStage != null) {
+            schedulePopupStage.close();
+        }
+    } catch (Exception e) {
+        System.out.println("Error saving review: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
 
 // Update the Command interface and implementation
 private interface Command {

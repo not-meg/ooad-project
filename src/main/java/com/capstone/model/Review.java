@@ -1,57 +1,44 @@
 package com.capstone.model;
 
-import javafx.beans.property.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDate;
 import java.util.List;
 
+@Document(collection = "reviews") // Ensure the collection name matches
 public class Review {
 
-    private final StringProperty id = new SimpleStringProperty();
-    private final StringProperty teamId = new SimpleStringProperty();
-    private final StringProperty facultyId = new SimpleStringProperty();
-    private final ListProperty<String> panelMembersId = new SimpleListProperty<>();
-    private final StringProperty status = new SimpleStringProperty();
-    private final IntegerProperty phase = new SimpleIntegerProperty();
-    private final StringProperty title = new SimpleStringProperty();
-    private final ObjectProperty<LocalDate> reviewDate = new SimpleObjectProperty<>();
-    private final StringProperty reviewTime = new SimpleStringProperty();
+    @Id
+    private String id;
+    private String teamId;
+    private String facultyId;
+    private List<String> panelMembersId;
+    private String status;
+    private int phase; // Directly store the integer phase
+    private String title;
+    private LocalDate reviewDate;
+    private String reviewTime;
 
-    public Review() {}
+    // Getters
+    public String getId() { return id; }
+    public String getTeamId() { return teamId; }
+    public String getFacultyId() { return facultyId; }
+    public List<String> getPanelMembersId() { return panelMembersId; }
+    public String getStatus() { return status; }
+    public int getPhase() { return phase; }
+    public String getTitle() { return title; }
+    public LocalDate getReviewDate() { return reviewDate; }
+    public String getReviewTime() { return reviewTime; }
 
-    // Getters and setters with properties
-    public String getId() { return id.get(); }
-    public void setId(String id) { this.id.set(id); }
-    public StringProperty idProperty() { return id; }
-
-    public String getTeamId() { return teamId.get(); }
-    public void setTeamId(String teamId) { this.teamId.set(teamId); }
-    public StringProperty teamIdProperty() { return teamId; }
-
-    public String getFacultyId() { return facultyId.get(); }
-    public void setFacultyId(String facultyId) { this.facultyId.set(facultyId); }
-    public StringProperty facultyIdProperty() { return facultyId; }
-
-    public List<String> getPanelMembersId() { return panelMembersId.get(); }
-    public void setPanelMembersId(List<String> panelMembersId) { this.panelMembersId.setAll(panelMembersId); }
-    public ListProperty<String> panelMembersIdProperty() { return panelMembersId; }
-
-    public String getStatus() { return status.get(); }
-    public void setStatus(String status) { this.status.set(status); }
-    public StringProperty statusProperty() { return status; }
-
-    public int getPhase() { return phase.get(); }
-    public void setPhase(int phase) { this.phase.set(phase); }
-    public IntegerProperty phaseProperty() { return phase; }
-
-    public String getTitle() { return title.get(); }
-    public void setTitle(String title) { this.title.set(title); }
-    public StringProperty titleProperty() { return title; }
-
-    public LocalDate getReviewDate() { return reviewDate.get(); }
-    public void setReviewDate(LocalDate reviewDate) { this.reviewDate.set(reviewDate); }
-    public ObjectProperty<LocalDate> reviewDateProperty() { return reviewDate; }
-
-    public String getReviewTime() { return reviewTime.get(); }
-    public void setReviewTime(String reviewTime) { this.reviewTime.set(reviewTime); }
-    public StringProperty reviewTimeProperty() { return reviewTime; }
+    // Setters
+    public void setId(String id) { this.id = id; }
+    public void setTeamId(String teamId) { this.teamId = teamId; }
+    public void setFacultyId(String facultyId) { this.facultyId = facultyId; }
+    public void setPanelMembersId(List<String> panelMembersId) { this.panelMembersId = panelMembersId; }
+    public void setStatus(String status) { this.status = status; }
+    public void setPhase(int phase) { this.phase = phase; }
+    public void setTitle(String title) { this.title = title; }
+    public void setReviewDate(LocalDate reviewDate) { this.reviewDate = reviewDate; }
+    public void setReviewTime(String reviewTime) { this.reviewTime = reviewTime; }
 }
