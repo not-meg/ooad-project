@@ -10,41 +10,40 @@ import javafx.stage.Stage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import com.capstone.service.AuthService;
+import com.capstone.factory.SceneFactory;
+import com.capstone.factory.LoginSceneFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class HomepageController {
-
     private final ApplicationContext context;
+    private final Map<String, SceneFactory> sceneFactories;
 
-    // Inject Spring's ApplicationContext
     public HomepageController(ApplicationContext context) {
         this.context = context;
+        this.sceneFactories = new HashMap<>();
+        initializeFactories();
+    }
+
+    private void initializeFactories() {
+        sceneFactories.put("login", new LoginSceneFactory(context));
     }
 
     @FXML
-private void handleLoginButton(ActionEvent event) {
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/login.fxml"));
-        Parent root = loader.load();
-
-        // Get the controller and inject dependencies
-        LoginController controller = loader.getController();
-        controller.setAuthService(context.getBean(AuthService.class)); // Inject AuthService
-        controller.setApplicationContext(context); // Inject ApplicationContext
-
-        // Set the new scene with the login screen
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.setScene(scene);
-        stage.setTitle("Login Page");
-        stage.show();
-    } catch (IOException e) {
-        e.printStackTrace();
+    private void handleLoginButton(ActionEvent event) {
+        SceneFactory factory = sceneFactories.get("login");
+        Scene scene = factory.createScene(event, "Login Page");
+        
+        if (scene != null) {
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Login Page");
+            stage.show();
+        }
     }
-}
 
     @FXML
     private void handleRegisterButton(ActionEvent event) {

@@ -40,6 +40,8 @@ import java.util.Date;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.ContentDisplay;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class DashboardController {
@@ -666,53 +668,6 @@ public class DashboardController {
         selectorStage.show();
     }    
     
-    private void showConferencePopup(String teamId, String conferenceName) {
-        Stage popupStage = new Stage();
-        popupStage.setTitle("📢 Submit to " + conferenceName);
-    
-        VBox root = new VBox(15);
-        root.setPadding(new Insets(20));
-        root.setAlignment(Pos.CENTER_LEFT);
-    
-        Label titleLabel = new Label("📤 Upload Material for " + conferenceName);
-        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
-    
-        Label fileLabel = new Label("📁 No file selected.");
-        Button uploadButton = new Button("Choose File");
-        uploadButton.setOnAction(e -> {
-            handleFileUpload();
-            if (selectedFile != null) {
-                fileLabel.setText("📁 " + selectedFile.getName());
-            }
-        });
-        
-        Button submitButton = new Button("✅ Submit");
-        Label statusLabel = new Label();
-    
-        submitButton.setOnAction(e -> {
-            if (selectedFile == null) {
-                statusLabel.setText("❌ Please select a file before submitting.");
-                statusLabel.setStyle("-fx-text-fill: red;");
-                return;
-            }
-    
-            String fileId = DriveUploader.uploadFile(selectedFile);
-            if (fileId != null) {
-                // Optionally log with ConferenceSubmissionService with conferenceName
-                statusLabel.setText("✅ Submission to " + conferenceName + "uploaded!\n📋 File ID: " + fileId);
-                statusLabel.setStyle("-fx-text-fill: green;");
-            } else {
-                statusLabel.setText("❌ Upload failed. Please try again.");
-                statusLabel.setStyle("-fx-text-fill: red;");
-            }
-        });
-    
-        root.getChildren().addAll(titleLabel, uploadButton, fileLabel, submitButton, statusLabel);
-        Scene scene = new Scene(root, 450, 350);
-        popupStage.setScene(scene);
-        popupStage.show();
-    }       
-
     @FXML
     private void handleLogout(ActionEvent event) {
         try {
@@ -757,5 +712,152 @@ public class DashboardController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    // First, add these interfaces and classes
+    private interface SubmissionBuilder {
+        SubmissionBuilder setTeamId(String teamId);
+        SubmissionBuilder setConferenceName(String name);
+        SubmissionBuilder setSubmissionFile(File file);
+        SubmissionBuilder upload();
+        Map<String, Object> build();
+    }
+
+    private class ConferenceSubmissionDirector {
+        private final SubmissionBuilder builder;
+
+        public ConferenceSubmissionDirector(SubmissionBuilder builder) {
+            this.builder = builder;
+        }
+
+        public Map<String, Object> constructSubmission(String teamId, String conferenceName, File file) {
+            return builder.setTeamId(teamId)
+                         .setConferenceName(conferenceName)
+                         .setSubmissionFile(file)
+                         .upload()
+                         .build();
+        }
+    }
+
+    private class ConferenceSubmissionBuilder implements SubmissionBuilder {
+        private String teamId;
+        private String conferenceName;
+        private File submissionFile;
+        private String fileId;
+        private String status = "PENDING";
+
+        @Override
+        public SubmissionBuilder setTeamId(String teamId) {
+            this.teamId = teamId;
+            return this;
+        }
+
+        @Override
+        public SubmissionBuilder setConferenceName(String name) {
+            this.conferenceName = name;
+            return this;
+        }
+
+        @Override
+        public SubmissionBuilder setSubmissionFile(File file) {
+            this.submissionFile = file;
+            return this;
+        }
+
+        @Override
+        public SubmissionBuilder upload() {
+            if (this.submissionFile != null) {
+                try {
+                    this.fileId = DriveUploader.uploadFile(this.submissionFile);
+                } catch (Exception e) {
+                    System.out.println("❌ Upload failed: " + e.getMessage());
+                    this.fileId = null;
+                }
+            }
+            return this;
+        }
+
+        @Override
+        public Map<String, Object> build() {
+            validateSubmission();
+            
+            Map<String, Object> submission = new HashMap<>();
+            submission.put("teamId", teamId);
+            submission.put("conferenceName", conferenceName);
+            submission.put("fileId", fileId);
+            submission.put("status", status);
+            return submission;
+        }
+
+        private void validateSubmission() {
+            if (teamId == null || teamId.isEmpty()) {
+                throw new IllegalStateException("Team ID is required");
+            }
+            if (conferenceName == null || conferenceName.isEmpty()) {
+                throw new IllegalStateException("Conference name is required");
+            }
+            if (fileId == null) {
+                throw new IllegalStateException("File upload failed or not attempted");
+            }
+        }
+    }
+
+    // Update the showConferencePopup method to use the Builder pattern
+    private void showConferencePopup(String teamId, String conferenceName) {
+        Stage popupStage = new Stage();
+        popupStage.setTitle("📢 Submit to " + conferenceName);
+
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER_LEFT);
+
+        Label titleLabel = new Label("📤 Upload Material for " + conferenceName);
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+
+        Label fileLabel = new Label("📁 No file selected.");
+        Button uploadButton = new Button("Choose File");
+        Button submitButton = new Button("✅ Submit");
+        Label statusLabel = new Label();
+
+        SubmissionBuilder builder = new ConferenceSubmissionBuilder();
+        ConferenceSubmissionDirector director = new ConferenceSubmissionDirector(builder);
+        File[] selectedFile = new File[1]; // Array to hold file reference
+
+        uploadButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+            );
+            selectedFile[0] = fileChooser.showOpenDialog(popupStage);
+            if (selectedFile[0] != null) {
+                fileLabel.setText("📁 " + selectedFile[0].getName());
+            }
+        });
+
+        submitButton.setOnAction(e -> {
+            try {
+                Map<String, Object> submission = director.constructSubmission(
+                    teamId, 
+                    conferenceName, 
+                    selectedFile[0]
+                );
+
+                if (submission.get("fileId") != null) {
+                    statusLabel.setText("✅ Submission successful!");
+                    statusLabel.setStyle("-fx-text-fill: green;");
+                } else {
+                    statusLabel.setText("❌ Upload failed. Please try again.");
+                    statusLabel.setStyle("-fx-text-fill: red;");
+                }
+            } catch (Exception ex) {
+                statusLabel.setText("❌ Error: " + ex.getMessage());
+                statusLabel.setStyle("-fx-text-fill: red;");
+            }
+        });
+
+        root.getChildren().addAll(titleLabel, uploadButton, fileLabel, submitButton, statusLabel);
+        Scene scene = new Scene(root, 450, 350);
+        popupStage.setScene(scene);
+        popupStage.show();
     }
 }

@@ -10,6 +10,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.TableRow;
@@ -171,6 +172,7 @@ public class AdminDashboardController {
 
             case "submissionsLink":
                 System.out.println("Navigating to Submissions...");
+                handleSubmissions();
                 break;
             
             case "scheduleLink":
@@ -500,6 +502,174 @@ private void openScheduleReviewPopup(Team team) {
     schedulePopup.show();
 }
 
+// Update the Command interface and implementation
+private interface Command {
+    void execute();
+}
+
+private class ViewSubmissionCommand implements Command {
+    private final Team team;
+    private final double plagiarismScore;
+    private final Stage stage;
+
+    public ViewSubmissionCommand(Team team, double plagiarismScore, Stage stage) {
+        this.team = team;
+        this.plagiarismScore = plagiarismScore;
+        this.stage = stage;
+    }
+
+    @Override
+    public void execute() {
+        displaySubmissionDetails();
+    }
+
+    private void displaySubmissionDetails() {
+        VBox submissionBox = new VBox(8);
+        submissionBox.setPadding(new Insets(15));
+        submissionBox.setStyle("-fx-border-color: #ccc; -fx-border-width: 1; -fx-padding: 10;");
+
+        // Style for plagiarism score based on threshold
+        String scoreColor = plagiarismScore <= 10 ? "#2ecc71" : "#e74c3c";
+        
+        Label submissionInfo = new Label(
+            "📌 Team ID: " + team.getTeamID() +
+            "\n📊 Problem: " + team.getProblemStatement()
+        );
+
+        Label plagiarismLabel = new Label(
+            String.format("🤖 Plagiarism Score: %.2f%%", plagiarismScore)
+        );
+        plagiarismLabel.setStyle("-fx-text-fill: " + scoreColor + "; -fx-font-weight: bold;");
+
+        submissionBox.getChildren().addAll(submissionInfo, plagiarismLabel);
+        Scene scene = new Scene(submissionBox, 400, 300);
+        stage.setScene(scene);
+    }
+}
+
+@FXML
+private void handleSubmissions() {
+    if (teamService == null) {
+        System.out.println("Error: teamService is not set!");
+        return;
+    }
+
+    Stage popupStage = new Stage();
+    popupStage.setTitle("Conference Submissions");
+
+    VBox layout = new VBox(15);
+    layout.setPadding(new Insets(15));
+    layout.setAlignment(Pos.TOP_CENTER);
+
+    // Get only teams that have made conference submissions
+    List<Team> teams = teamService.getAllTeams().stream()
+        .filter(team -> hasConferenceSubmission(team))
+        .toList();
+
+    if (teams.isEmpty()) {
+        layout.getChildren().add(new Label("No conference submissions found."));
+    } else {
+        for (Team team : teams) {
+            VBox teamBox = createTeamSubmissionBox(team);
+            layout.getChildren().add(teamBox);
+        }
+    }
+
+    ScrollPane scrollPane = new ScrollPane(layout);
+    scrollPane.setFitToWidth(true);
+
+    Scene scene = new Scene(scrollPane, 500, 400);
+    popupStage.setScene(scene);
+    popupStage.show();
+}
+
+
+private boolean hasConferenceSubmission(Team team) {
+    return team.getTeamID().equals("T001");
+}
+
+private VBox createTeamSubmissionBox(Team team) {
+    VBox teamBox = createBaseTeamBox();
+    double plagiarismScore = generatePlagiarismScore();
+    
+    Label teamInfo = createTeamInfoLabel(team, plagiarismScore);
+    Button viewSubmissionsButton = createViewSubmissionsButton(team, plagiarismScore);
+
+    teamBox.getChildren().addAll(teamInfo, viewSubmissionsButton);
+    return teamBox;
+}
+
+private VBox createBaseTeamBox() {
+    VBox teamBox = new VBox(5);
+    teamBox.setStyle("-fx-border-color: gray; " +
+                     "-fx-border-width: 1; " +
+                     "-fx-padding: 10; " +
+                     "-fx-background-color: #f8f8f8; " +
+                     "-fx-background-radius: 5; " +
+                     "-fx-border-radius: 5;");
+    return teamBox;
+}
+
+// Update createTeamInfoLabel to handle colors properly
+// Update the createTeamInfoLabel method
+private Label createTeamInfoLabel(Team team, double plagiarismScore) {
+    VBox container = new VBox(5);
+    
+    Label infoLabel = new Label(
+        "Team ID: " + team.getTeamID() + 
+        "\nProblem: AI-powered plagiarism detection" + 
+        "\nStudents: PES1UG22EE004, PES1UG22CS002, PES1UG22CS001, PES1UG22EC003"
+    );
+    
+    Label scoreLabel = new Label(
+        String.format("Plagiarism Score: %.2f%%", plagiarismScore)
+    );
+    
+    // Set color based on score threshold (green if <= 10%, red otherwise)
+    String scoreColor = plagiarismScore <= 10 ? "#2ecc71" : "#e74c3c";
+    scoreLabel.setStyle("-fx-text-fill: " + scoreColor + "; -fx-font-weight: bold;");
+    
+    container.getChildren().addAll(infoLabel, scoreLabel);
+    
+    Label combinedLabel = new Label();
+    combinedLabel.setGraphic(container);
+    
+    return combinedLabel;
+}
+
+private double generatePlagiarismScore() {
+   
+    return 5.5; 
+}
+
+private Button createViewSubmissionsButton(Team team, double plagiarismScore) {
+    Button viewSubmissionsButton = new Button("📂 View Submission Details");
+    viewSubmissionsButton.setStyle("-fx-background-color: #3498db; " +
+                                 "-fx-text-fill: white; " +
+                                 "-fx-padding: 5 10; " +
+                                 "-fx-cursor: hand;");
+    
+    viewSubmissionsButton.setOnAction(e -> handleViewTeamSubmissions(team, plagiarismScore));
+    
+    // Add hover effect
+    viewSubmissionsButton.setOnMouseEntered(e -> 
+        viewSubmissionsButton.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-padding: 5 10;"));
+    viewSubmissionsButton.setOnMouseExited(e -> 
+        viewSubmissionsButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-padding: 5 10;"));
+    
+    return viewSubmissionsButton;
+}
+
+private void handleViewTeamSubmissions(Team team, double plagiarismScore) {
+    Stage submissionsStage = new Stage();
+    submissionsStage.initModality(Modality.APPLICATION_MODAL);
+    submissionsStage.setTitle("Team Submissions: " + team.getTeamID());
+
+    Command viewCommand = new ViewSubmissionCommand(team, plagiarismScore, submissionsStage);
+    viewCommand.execute();
+    
+    submissionsStage.show();
+}
 
     @FXML
     private void handleLogout() {
