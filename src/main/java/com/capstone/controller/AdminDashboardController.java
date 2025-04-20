@@ -22,7 +22,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-
+import java.util.stream.Collectors;
 
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -499,6 +499,17 @@ private void openScheduleReviewPopup(Team team) {
     phaseComboBox.setPrefWidth(200);
     phaseComboBox.setPromptText("Select Phase");
 
+    // Panel Members dropdown
+    Label panelMembersLabel = new Label("Panel Member:");
+    ComboBox<String> panelMembersComboBox = new ComboBox<>();
+    List<Faculty> allFaculty = adminService.getAllFaculty();
+    List<String> facultyIds = allFaculty.stream()
+            .map(Faculty::getUserID)
+            .collect(Collectors.toList());
+    panelMembersComboBox.getItems().addAll(facultyIds);
+    panelMembersComboBox.setPrefWidth(200);
+    panelMembersComboBox.setPromptText("Select Faculty");
+
     // Title input
     Label titleLabel = new Label("Title:");
     TextField titleField = new TextField();
@@ -537,6 +548,7 @@ private void openScheduleReviewPopup(Team team) {
         teamIdLabel,
         facultyIdLabel,
         phaseLabel, phaseComboBox,
+        panelMembersLabel, panelMembersComboBox,
         titleLabel, titleField,
         dateLabel, datePicker,
         timeLabel, timeBox
