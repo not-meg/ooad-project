@@ -16,6 +16,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.TableRow;
 import javafx.geometry.Pos;
 import javafx.util.Duration;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
+import javafx.scene.control.DatePicker;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+
 
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -471,33 +478,71 @@ public class AdminDashboardController {
     popupStage.show();
 }
 
-// Method to open the "Schedule Review" pop-up window
 private void openScheduleReviewPopup(Team team) {
     Stage schedulePopup = new Stage();
     schedulePopup.setTitle("Schedule Review");
 
-    VBox scheduleRoot = new VBox(10);
+    VBox scheduleRoot = new VBox(15);
     scheduleRoot.setPadding(new Insets(20));
+    scheduleRoot.setAlignment(Pos.CENTER);
 
     // Team ID and Faculty ID labels
     Label teamIdLabel = new Label("Team ID: " + team.getTeamID());
     Label facultyIdLabel = new Label("Faculty ID: " + team.getFacultyID());
+    teamIdLabel.setStyle("-fx-font-size: 16px;");
+    facultyIdLabel.setStyle("-fx-font-size: 16px;");
 
-    // Center the labels and remove bold font style
-    teamIdLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-alignment: center;");
-    facultyIdLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: normal; -fx-alignment: center;");
+    // Phase dropdown
+    Label phaseLabel = new Label("Phase:");
+    ComboBox<String> phaseComboBox = new ComboBox<>();
+    phaseComboBox.getItems().addAll("Phase 1", "Phase 2", "Phase 3", "Phase 4");
+    phaseComboBox.setPrefWidth(200);
+    phaseComboBox.setPromptText("Select Phase");
 
-    // Add labels to the VBox
-    scheduleRoot.getChildren().addAll(teamIdLabel, facultyIdLabel);
+    // Title input
+    Label titleLabel = new Label("Title:");
+    TextField titleField = new TextField();
+    titleField.setPromptText("Enter Review Title");
+    titleField.setPrefWidth(200);
 
-    // Set alignment of the labels in the VBox to center
-    VBox.setMargin(teamIdLabel, new Insets(0, 0, 10, 0));
-    VBox.setMargin(facultyIdLabel, new Insets(0, 0, 10, 0));
+    // Review Date picker
+    Label dateLabel = new Label("Review Date:");
+    DatePicker datePicker = new DatePicker();
 
-    // Center the VBox content
-    scheduleRoot.setAlignment(Pos.CENTER);
+    // Review Time picker (using ComboBox for hours and minutes)
+    Label timeLabel = new Label("Review Time:");
+    HBox timeBox = new HBox(10);
+    timeBox.setAlignment(Pos.CENTER);
+    ComboBox<String> hourCombo = new ComboBox<>();
+    ComboBox<String> minuteCombo = new ComboBox<>();
+    hourCombo.setPrefWidth(80);
+    minuteCombo.setPrefWidth(80);
+    hourCombo.setPromptText("Hour");
+    minuteCombo.setPromptText("Minute");
 
-    Scene scheduleScene = new Scene(scheduleRoot, 300, 200);
+    // Populate hours (00 to 23)
+    for (int i = 0; i < 24; i++) {
+        hourCombo.getItems().add(String.format("%02d", i));
+    }
+
+    // Populate minutes (00, 15, 30, 45)
+    for (int i = 0; i < 60; i += 15) {
+        minuteCombo.getItems().add(String.format("%02d", i));
+    }
+
+    timeBox.getChildren().addAll(hourCombo, minuteCombo);
+
+    // Add everything to the form
+    scheduleRoot.getChildren().addAll(
+        teamIdLabel,
+        facultyIdLabel,
+        phaseLabel, phaseComboBox,
+        titleLabel, titleField,
+        dateLabel, datePicker,
+        timeLabel, timeBox
+    );
+
+    Scene scheduleScene = new Scene(scheduleRoot, 350, 450);
     schedulePopup.setScene(scheduleScene);
     schedulePopup.show();
 }
