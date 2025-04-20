@@ -42,7 +42,35 @@ public class ReviewService {
         return reviewRepository.findByStatus(status);
     }
 
+     public String generateReviewId() {
+        // Find the maximum existing review ID
+        List<Review> reviews = reviewRepository.findAll();
+        
+        int maxNumber = 0;
+        for (Review review : reviews) {
+            String id = review.getId();
+            if (id != null && id.startsWith("R")) {
+                try {
+                    int num = Integer.parseInt(id.substring(1));
+                    if (num > maxNumber) {
+                        maxNumber = num;
+                    }
+                } catch (NumberFormatException e) {
+                    // Skip IDs that don't follow the numeric pattern
+                }
+            }
+        }
+        
+        // Generate the next number and format it
+        int nextNumber = maxNumber + 1;
+        return String.format("R%03d", nextNumber); // R001, R002, etc.
+    }
+    
     public Review saveReview(Review review) {
+        // If ID is not set or is not in the right format, generate a new one
+        if (review.getId() == null || !review.getId().matches("R\\d{3}")) {
+            review.setId(generateReviewId());
+        }
         return reviewRepository.save(review);
     }
 

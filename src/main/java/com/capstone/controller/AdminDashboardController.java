@@ -11,6 +11,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import java.util.UUID;
 import java.util.Arrays;
+import javafx.scene.control.Alert;
 import java.time.LocalDate;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -602,10 +603,10 @@ private void handleScheduleSubmit(String phase, String panelMemberId, String tit
     
     if (this.reviewService == null) {
         System.out.println("ReviewService is null, attempting to get from application context");
-        // Try to manually get the service from the application context
         this.reviewService = CapstoneApplication.getApplicationContext().getBean(ReviewService.class);
         
         if (this.reviewService == null) {
+            showError("Service error", "Could not schedule review due to a service error.");
             return;
         }
     }
@@ -613,6 +614,7 @@ private void handleScheduleSubmit(String phase, String panelMemberId, String tit
     // Input validation
     if (phase == null || panelMemberId == null || title == null || 
         reviewDate == null || hour == null || minute == null) {
+        showError("Validation Error", "Please fill in all required fields");
         return;
     }
     
@@ -620,7 +622,8 @@ private void handleScheduleSubmit(String phase, String panelMemberId, String tit
     String reviewTime = String.format("%s:%s", hour, minute);
     
     Review newReview = new Review();
-    newReview.setId(UUID.randomUUID().toString());
+    // Remove the UUID generation - let the service handle ID generation
+    // newReview.setId(UUID.randomUUID().toString());
     newReview.setTeamId(team.getTeamID());
     newReview.setFacultyId(team.getFacultyID());
     newReview.setPanelMembersId(Arrays.asList(panelMemberId));
@@ -638,12 +641,31 @@ private void handleScheduleSubmit(String phase, String panelMemberId, String tit
         if (schedulePopupStage != null) {
             schedulePopupStage.close();
         }
+        
+        // Show success message
+        showSuccess("Success", "Review scheduled successfully with ID: " + savedReview.getId());
     } catch (Exception e) {
         System.out.println("Error saving review: " + e.getMessage());
         e.printStackTrace();
+        showError("Database Error", "Failed to save the review: " + e.getMessage());
     }
 }
 
+private void showError(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+}
+
+private void showSuccess(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+}
 
 // Update the Command interface and implementation
 private interface Command {
