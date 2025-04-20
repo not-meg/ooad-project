@@ -27,6 +27,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 
 import javafx.scene.control.TableColumn;
@@ -618,19 +619,30 @@ private void handleScheduleSubmit(String phase, String panelMemberId, String tit
         return;
     }
     
+    // Date and time validation - check if selected date/time is in the future
+    LocalDate currentDate = LocalDate.now();
+    LocalTime currentTime = LocalTime.now();
+    LocalTime reviewTime = LocalTime.of(Integer.parseInt(hour), Integer.parseInt(minute));
+    
+    if (reviewDate.isBefore(currentDate)) {
+        showError("Date Error", "Review date cannot be in the past");
+        return;
+    } else if (reviewDate.isEqual(currentDate) && reviewTime.isBefore(currentTime)) {
+        showError("Time Error", "Review time cannot be in the past");
+        return;
+    }
+    
     // Create the review object
-    String reviewTime = String.format("%s:%s", hour, minute);
+    String reviewTimeStr = String.format("%s:%s", hour, minute);
     
     Review newReview = new Review();
-    // Remove the UUID generation - let the service handle ID generation
-    // newReview.setId(UUID.randomUUID().toString());
     newReview.setTeamId(team.getTeamID());
     newReview.setFacultyId(team.getFacultyID());
     newReview.setPanelMembersId(Arrays.asList(panelMemberId));
     newReview.setPhase(Integer.parseInt(phase));
     newReview.setTitle(title);
     newReview.setReviewDate(reviewDate);
-    newReview.setReviewTime(reviewTime);
+    newReview.setReviewTime(reviewTimeStr);
     newReview.setStatus("Scheduled");
     
     try {
