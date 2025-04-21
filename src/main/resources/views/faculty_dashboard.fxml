@@ -46,13 +46,7 @@
                       -fx-font-size: 14px;
                       -fx-cursor: hand;
                       -fx-padding: 5;"/>
-                      
-                <Label text="Feedback" fx:id="feedbackLink" onMouseClicked="#handleNavigation" style="
-                      -fx-text-fill: white;
-                      -fx-font-size: 14px;
-                      -fx-cursor: hand;
-                      -fx-padding: 5;"/>
-
+                    
                 <Label text="Results" fx:id="resultsLink" onMouseClicked="#handleNavigation" style="
                       -fx-text-fill: white;
                       -fx-font-size: 14px;

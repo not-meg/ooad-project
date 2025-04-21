@@ -2,10 +2,11 @@ package com.capstone.controller;
 
 import com.capstone.model.PhaseSubmission;
 import com.capstone.model.Team;
+import com.capstone.model.Review;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.FacultyService;
 import com.capstone.service.PhaseSubmissionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.capstone.service.ReviewService;
 import com.capstone.service.StudentGradeService;
 import com.capstone.model.StudentGrade;
 import com.capstone.CapstoneApplication;
@@ -16,6 +17,7 @@ import javafx.scene.control.ComboBox;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import java.net.URL;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.io.OutputStream;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
@@ -56,7 +58,6 @@ public class FacultyDashboardController {
     @FXML private Label homeLink;
     @FXML private Label teamsLink;
     @FXML private Label reviewLink;
-    @FXML private Label feedbackLink;
     @FXML private Label resultsLink;
     @FXML private Label logoutLink;
 
@@ -66,6 +67,9 @@ public class FacultyDashboardController {
 
     private FacultyService facultyService;
     private PhaseSubmissionService submissionService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @Autowired
     private StudentGradeService studentGradeService;
@@ -80,6 +84,10 @@ public class FacultyDashboardController {
 
     public void setPhaseSubmissionService(PhaseSubmissionService submissionService) {
         this.submissionService = submissionService;
+    }
+
+    public void setReviewService(ReviewService reviewService) {
+        this.reviewService = reviewService;
     }
 
     public void setStudentGradeService(StudentGradeService studentGradeService) {
@@ -160,14 +168,12 @@ public class FacultyDashboardController {
                 handleViewTeams();
                 break;
             case "Review Schedule":
-                System.out.println("Navigating to Review Schedule... (TODO)");
-                break;
-            case "Feedback":
-                System.out.println("Navigating to Feedback... (TODO)");
+                System.out.println("Navigating to Review Schedule... )");
+                loadReviewSchedulePopup();
                 break;
             case "Results":
-                handleViewResults();
                 System.out.println("Navigating to Results... ");
+                handleViewResults();
                 break;
             case "Logout":
                 handleLogout();
@@ -296,6 +302,61 @@ public class FacultyDashboardController {
         submissionsStage.showAndWait();
     }
 
+    private void loadReviewSchedulePopup() {
+        if (reviewService == null) {
+            reviewService = CapstoneApplication.getApplicationContext().getBean(ReviewService.class);
+        }
+        
+        if (reviewService == null) {
+            System.out.println("Error: reviewService is null!");
+            return;
+        }
+
+        // Fetch reviews assigned to this faculty using the logged-in faculty ID
+        List<Review> reviews = reviewService.getReviewsByFacultyId(loggedInFacultyID);
+
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Review Schedule");
+
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(15));
+        layout.setAlignment(Pos.TOP_CENTER);
+
+        if (reviews.isEmpty()) {
+            layout.getChildren().add(new Label("No reviews scheduled for you."));
+        } else {
+            for (Review review : reviews) {
+                VBox reviewBox = new VBox(5);
+                reviewBox.setStyle("-fx-border-color: gray; -fx-border-width: 1; -fx-padding: 10; -fx-background-color: #f8f8f8;");
+
+                Label reviewInfo = new Label("Team ID: " + review.getTeamId() +
+                                            "\nTitle: " + review.getTitle() +
+                                            "\nPhase: " + review.getPhase() +
+                                            "\nStatus: " + review.getStatus() +
+                                            "\nDate: " + review.getReviewDate() +
+                                            "\nTime: " + review.getReviewTime());
+
+                Button viewDetailsButton = new Button("📄 View Details");
+                viewDetailsButton.setOnAction(e -> handleViewReviewDetails(review.getId()));
+
+                reviewBox.getChildren().addAll(reviewInfo, viewDetailsButton);
+                layout.getChildren().add(reviewBox);
+            }
+        }
+
+        ScrollPane scrollPane = new ScrollPane(layout);
+        scrollPane.setFitToWidth(true);
+
+        Scene scene = new Scene(scrollPane, 500, 400);
+        popupStage.setScene(scene);
+        popupStage.showAndWait();
+    }
+
+    private void handleViewReviewDetails(String reviewId) {
+        // Handle the logic for viewing detailed review (e.g., open another popup)
+        System.out.println("View details for review ID: " + reviewId);
+    }
 
     @FXML
     public void onDownloadButtonClick(String fileId) {
