@@ -21,7 +21,6 @@ public class PhaseSubmissionController {
         this.submissionService = submissionService;
         this.teamService = teamService;
 
-        System.out.println("In PhaseSubmissionController.");
     }
 
     public String submitPhase(String studentID, File selectedFile, String selectedPhase, StringBuilder resultLog) {

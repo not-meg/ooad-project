@@ -211,6 +211,10 @@ public class DashboardController {
             showAlert("Error", "Team not found!");
             return;
         }
+
+        if (studentGradeService == null) {
+            studentGradeService = CapstoneApplication.getApplicationContext().getBean(StudentGradeService.class);
+        }
     
         String teamId = teamOpt.get().getTeamID();
         new ResultsPopup(studentGradeService, loggedInStudentID, teamId).show();
