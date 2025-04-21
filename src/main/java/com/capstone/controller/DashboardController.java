@@ -203,7 +203,7 @@ public class DashboardController {
         }
 
         if (notificationService == null) {
-            notificationService = CapstoneApplication.getApplicationContext().getBean(NotificationService.class);
+            notificationService = ServiceLocator.getNotificationService();
         }
 
         Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
@@ -235,8 +235,9 @@ public class DashboardController {
         }
 
         if (studentGradeService == null) {
-            studentGradeService = CapstoneApplication.getApplicationContext().getBean(StudentGradeService.class);
+            studentGradeService = ServiceLocator.getStudentGradeService();
         }
+
     
         String teamId = teamOpt.get().getTeamID();
         new ResultsPopup(studentGradeService, loggedInStudentID, teamId).show();
@@ -435,6 +436,28 @@ class SubmissionPopup {
         statusLabel.setText(result != null ? result : resultLog.toString());
     }
 }
+
+// Singleton holder for services
+class ServiceLocator {
+
+    private static NotificationService notificationService;
+    private static StudentGradeService studentGradeService;
+
+    public static NotificationService getNotificationService() {
+        if (notificationService == null) {
+            notificationService = CapstoneApplication.getApplicationContext().getBean(NotificationService.class);
+        }
+        return notificationService;
+    }
+
+    public static StudentGradeService getStudentGradeService() {
+        if (studentGradeService == null) {
+            studentGradeService = CapstoneApplication.getApplicationContext().getBean(StudentGradeService.class);
+        }
+        return studentGradeService;
+    }
+}
+
 
 class ResultsPopup {
 
