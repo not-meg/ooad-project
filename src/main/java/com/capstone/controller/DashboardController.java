@@ -89,12 +89,24 @@ public class DashboardController {
 
     public void setLoggedInStudentID(String studentID) {
         this.loggedInStudentID = studentID;
-        new TeamDetailsLoader(teamService, teamIDLabel, problemStatementLabel, facultyLabel).load(loggedInStudentID);
+        loadTeamDetails();
     }
 
     @FXML
     public void initialize() {
-        new TeamDetailsLoader(teamService, teamIDLabel, problemStatementLabel, facultyLabel).load(loggedInStudentID);
+        loadTeamDetails();
+    }
+
+    private void loadTeamDetails() {
+        if (loggedInStudentID == null) return;
+        TeamCommand loadCommand = new LoadTeamDetailsCommand(
+            teamService,
+            loggedInStudentID,
+            teamIDLabel,
+            problemStatementLabel,
+            facultyLabel
+        );
+        new TeamActionExecutor().executeCommand(loadCommand);
     }
 
     @FXML
@@ -104,16 +116,23 @@ public class DashboardController {
 
         switch (section) {
             case "Home":
-                if (isSidebarOpen) {
-                    TranslateTransition transition = new TranslateTransition(Duration.millis(300), sidebar);
-                    transition.setToX(-200);
-                    transition.play();
-                    isSidebarOpen = false;
-                }
-                if (loggedInStudentID != null) {
-                    new TeamDetailsLoader(teamService, teamIDLabel, problemStatementLabel, facultyLabel).load(loggedInStudentID);
-                }
-                break;
+            if (isSidebarOpen) {
+                TranslateTransition transition = new TranslateTransition(Duration.millis(300), sidebar);
+                transition.setToX(-200);
+                transition.play();
+                isSidebarOpen = false;
+            }
+            if (loggedInStudentID != null) {
+                TeamCommand loadCommand = new LoadTeamDetailsCommand(
+                    teamService,
+                    loggedInStudentID,
+                    teamIDLabel,
+                    problemStatementLabel,
+                    facultyLabel
+                );
+                new TeamActionExecutor().executeCommand(loadCommand);
+            }
+            break;
             case "Notification":
                 showNotifications();
                 break;
@@ -156,8 +175,11 @@ public class DashboardController {
 
     @FXML
     private void handleViewTeam(ActionEvent event) {
-        new TeamDetailsPopup(teamService, loggedInStudentID).show();
+        TeamCommand showPopup = new ShowTeamPopupCommand(teamService, loggedInStudentID);
+        TeamActionExecutor executor = new TeamActionExecutor();
+        executor.executeCommand(showPopup);
     }
+    
 
     @FXML
     private void handleSubmissions() {
@@ -273,20 +295,34 @@ public class DashboardController {
     }
 }
 
-class TeamDetailsLoader {
-    private TeamService teamService;
-    private Label teamIDLabel, problemStatementLabel, facultyLabel;
+// --- Command Interface --- //
+interface TeamCommand {
+    void execute();
+}
 
-    public TeamDetailsLoader(TeamService service, Label teamID, Label problem, Label faculty) {
-        this.teamService = service;
-        this.teamIDLabel = teamID;
-        this.problemStatementLabel = problem;
-        this.facultyLabel = faculty;
+class TeamActionExecutor {
+    public void executeCommand(TeamCommand command) {
+        command.execute();
+    }
+}
+
+
+class LoadTeamDetailsCommand implements TeamCommand {
+    private final TeamService teamService;
+    private final String studentID;
+    private final Label teamIDLabel, problemStatementLabel, facultyLabel;
+
+    public LoadTeamDetailsCommand(TeamService teamService, String studentID,
+                                   Label teamIDLabel, Label problemStatementLabel, Label facultyLabel) {
+        this.teamService = teamService;
+        this.studentID = studentID;
+        this.teamIDLabel = teamIDLabel;
+        this.problemStatementLabel = problemStatementLabel;
+        this.facultyLabel = facultyLabel;
     }
 
-    public void load(String studentID) {
-        if (teamService == null || studentID == null) return;
-
+    @Override
+    public void execute() {
         Optional<Team> teamOpt = teamService.getTeamByStudentID(studentID);
         if (teamOpt.isPresent()) {
             Team team = teamOpt.get();
@@ -301,16 +337,17 @@ class TeamDetailsLoader {
     }
 }
 
-class TeamDetailsPopup {
-    private TeamService teamService;
-    private String studentID;
+class ShowTeamPopupCommand implements TeamCommand {
+    private final TeamService teamService;
+    private final String studentID;
 
-    public TeamDetailsPopup(TeamService service, String studentID) {
+    public ShowTeamPopupCommand(TeamService service, String studentID) {
         this.teamService = service;
         this.studentID = studentID;
     }
 
-    public void show() {
+    @Override
+    public void execute() {
         Optional<Team> teamOpt = teamService.getTeamByStudentID(studentID);
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
 
@@ -334,7 +371,7 @@ class TeamDetailsPopup {
             alert.setContentText("You are not part of any team yet.");
         }
 
-        alert.showAndWait(); // ✅ This was missing!
+        alert.showAndWait();
     }
 }
 

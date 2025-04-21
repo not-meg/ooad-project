@@ -432,8 +432,7 @@ public class AdminDashboardController {
         popupStage.setScene(scene);
         popupStage.show();
     }
-
-//     
+ 
 
 private void handleScheduleView() {
         if (teamService == null) {
