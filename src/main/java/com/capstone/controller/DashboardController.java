@@ -6,7 +6,6 @@ import com.capstone.service.TeamService;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.PhaseSubmissionService;
 import com.capstone.service.StudentGradeService;
-import com.capstone.model.StudentGrade;
 import com.capstone.service.NotificationService;
 import com.capstone.model.Notification;
 
@@ -39,17 +38,10 @@ import java.time.ZoneId;
 
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import java.util.Date;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.ContentDisplay;
-import java.util.HashMap;
-import java.util.Map;
-
-
-import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 
 public class DashboardController {
@@ -138,7 +130,27 @@ public class DashboardController {
                 handleConference();
                 break;
             case "Logout":
-                handleLogout();
+            System.out.println("Logging out...");
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
+                loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
+                Parent root = loader.load();
+
+                Stage stage = (Stage) clickedLabel.getScene().getWindow();
+                Scene scene = new Scene(root);
+                stage.setScene(scene);
+                stage.setTitle("Homepage");
+                stage.show();
+
+                System.out.println("✅ Successfully logged out to homepage");
+            } catch (IOException e) {
+                System.out.println("❌ Error loading homepage: " + e.getMessage());
+                e.printStackTrace();
+            }
+            break;
+            default:
+                System.out.println("Unknown section clicked");
+                break;
         }
     }
 
@@ -163,11 +175,17 @@ public class DashboardController {
     }
 
     private void showNotifications() {
-        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
-        if (!teamOpt.isPresent()) {
-            showAlert("Error", "Team not found!");
+        if (teamService == null || loggedInStudentID == null) {
+            showAlert("Error", "Team service or student not initialized.");
             return;
         }
+
+        if (notificationService == null) {
+            notificationService = CapstoneApplication.getApplicationContext().getBean(NotificationService.class);
+        }
+
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+
         Team team = teamOpt.get();
         new NotificationPopup(notificationService, team).show();
     }
@@ -181,7 +199,7 @@ public class DashboardController {
         Team team = teamOpt.get();
     
         // Get submissions for the team's phases
-        List<PhaseSubmission> submissions = submissionService.getSubmissionsByTeamId(team.getTeamID());
+        List<PhaseSubmission> submissions = submissionService.getSubmissionsByTeamID(team.getTeamID());
     
         // Call the MentorFeedbackPopup to show the feedback
         MentorFeedbackPopup.show(submissionService, team.getTeamID(), submissions);
@@ -200,28 +218,8 @@ public class DashboardController {
 
     @FXML
     private void handleConference() {
-        if (teamService == null || loggedInStudentID == null) {
-            showAlert("Error", "Team service not initialized or student not logged in.");
-            return;
-        }
-    
-        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
-        if (!teamOpt.isPresent()) {
-            showAlert("Error", "Team not found! Please contact support.");
-            return;
-        }
-    
-        Team team = teamOpt.get();
-    
-        if (!"Accepted".equalsIgnoreCase(team.getStatus())) {
-            showAlert("Access Denied", "Only accepted teams can submit to the conference.");
-            return;
-        }
-    
-        // Delegate the popup to the new class
-        ConferenceSelector.show(team.getTeamID(), selectedConference -> {
-            showConferencePopup(team.getTeamID(), selectedConference);
-        });
+        ConferenceSubmission ui = new ConferenceSubmission(teamService, loggedInStudentID);
+        ui.launchConferenceSubmission();
     }
     
     @FXML
@@ -634,14 +632,41 @@ class MentorFeedbackPopup {
         alert.showAndWait();
     }
 }
+class ConferenceSubmission {
 
-class ConferenceSelector {
+    private final TeamService teamService;
+    private final String loggedInStudentID;
 
-    public interface ConferenceSelectionHandler {
-        void onConferenceSelected(String conferenceName);
+    private File selectedFile;
+
+    public ConferenceSubmission(TeamService teamService, String loggedInStudentID) {
+        this.teamService = teamService;
+        this.loggedInStudentID = loggedInStudentID;
     }
 
-    public static void show(String teamId, ConferenceSelectionHandler handler) {
+    public void launchConferenceSubmission() {
+        if (teamService == null || loggedInStudentID == null) {
+            showAlert("Error", "Team service not initialized or student not logged in.");
+            return;
+        }
+
+        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
+        if (!teamOpt.isPresent()) {
+            showAlert("Error", "Team not found! Please contact support.");
+            return;
+        }
+
+        Team team = teamOpt.get();
+
+        if (!"Accepted".equalsIgnoreCase(team.getStatus())) {
+            showAlert("Access Denied", "Only accepted teams can submit to the conference.");
+            return;
+        }
+
+        showConferenceSelector(team.getTeamID());
+    }
+
+    private void showConferenceSelector(String teamId) {
         Stage selectorStage = new Stage();
         selectorStage.setTitle("🎓 Select Conference");
 
@@ -653,7 +678,9 @@ class ConferenceSelector {
         instructionLabel.setStyle("-fx-font-size: 16px;");
 
         ComboBox<String> conferenceDropdown = new ComboBox<>();
-        conferenceDropdown.getItems().addAll("ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025");
+        conferenceDropdown.getItems().addAll(
+                "ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025"
+        );
         conferenceDropdown.setPromptText("Select a conference");
 
         Button continueButton = new Button("📝 Continue");
@@ -666,7 +693,7 @@ class ConferenceSelector {
                 warningLabel.setStyle("-fx-text-fill: red;");
             } else {
                 selectorStage.close();
-                handler.onConferenceSelected(selectedConference); // notify dashboard controller
+                showConferencePopup(teamId, selectedConference);
             }
         });
 
@@ -675,101 +702,7 @@ class ConferenceSelector {
         selectorStage.setScene(scene);
         selectorStage.show();
     }
-}
 
-    // First, add these interfaces and classes
-    private interface SubmissionBuilder {
-        SubmissionBuilder setTeamId(String teamId);
-
-        SubmissionBuilder setConferenceName(String name);
-
-        SubmissionBuilder setSubmissionFile(File file);
-
-        SubmissionBuilder upload();
-
-        Map<String, Object> build();
-    }
-
-    private class ConferenceSubmissionDirector {
-        private final SubmissionBuilder builder;
-
-        public ConferenceSubmissionDirector(SubmissionBuilder builder) {
-            this.builder = builder;
-        }
-
-        public Map<String, Object> constructSubmission(String teamId, String conferenceName, File file) {
-            return builder.setTeamId(teamId)
-                    .setConferenceName(conferenceName)
-                    .setSubmissionFile(file)
-                    .upload()
-                    .build();
-        }
-    }
-
-private class ConferenceSubmissionBuilder implements SubmissionBuilder {
-        private String teamId;
-        private String conferenceName;
-        private File submissionFile;
-        private String fileId;
-        private String status = "PENDING";
-
-        @Override
-        public SubmissionBuilder setTeamId(String teamId) {
-            this.teamId = teamId;
-            return this;
-        }
-
-        @Override
-        public SubmissionBuilder setConferenceName(String name) {
-            this.conferenceName = name;
-            return this;
-        }
-
-        @Override
-        public SubmissionBuilder setSubmissionFile(File file) {
-            this.submissionFile = file;
-            return this;
-        }
-
-        @Override
-        public SubmissionBuilder upload() {
-            if (this.submissionFile != null) {
-                try {
-                    this.fileId = DriveUploader.uploadFile(this.submissionFile);
-                } catch (Exception e) {
-                    System.out.println("❌ Upload failed: " + e.getMessage());
-                    this.fileId = null;
-                }
-            }
-            return this;
-        }
-
-        @Override
-        public Map<String, Object> build() {
-            validateSubmission();
-
-            Map<String, Object> submission = new HashMap<>();
-            submission.put("teamId", teamId);
-            submission.put("conferenceName", conferenceName);
-            submission.put("fileId", fileId);
-            submission.put("status", status);
-            return submission;
-        }
-
-        private void validateSubmission() {
-            if (teamId == null || teamId.isEmpty()) {
-                throw new IllegalStateException("Team ID is required");
-            }
-            if (conferenceName == null || conferenceName.isEmpty()) {
-                throw new IllegalStateException("Conference name is required");
-            }
-            if (fileId == null) {
-                throw new IllegalStateException("File upload failed or not attempted");
-            }
-        }
-    }
-
-    // Update the showConferencePopup method to use the Builder pattern
     private void showConferencePopup(String teamId, String conferenceName) {
         Stage popupStage = new Stage();
         popupStage.setTitle("📢 Submit to " + conferenceName);
@@ -783,39 +716,30 @@ private class ConferenceSubmissionBuilder implements SubmissionBuilder {
 
         Label fileLabel = new Label("📁 No file selected.");
         Button uploadButton = new Button("Choose File");
-        Button submitButton = new Button("✅ Submit");
-        Label statusLabel = new Label();
-
-        SubmissionBuilder builder = new ConferenceSubmissionBuilder();
-        ConferenceSubmissionDirector director = new ConferenceSubmissionDirector(builder);
-        File[] selectedFile = new File[1]; // Array to hold file reference
 
         uploadButton.setOnAction(e -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-            selectedFile[0] = fileChooser.showOpenDialog(popupStage);
-            if (selectedFile[0] != null) {
-                fileLabel.setText("📁 " + selectedFile[0].getName());
+            handleFileUpload();
+            if (selectedFile != null) {
+                fileLabel.setText("📁 " + selectedFile.getName());
             }
         });
 
-        submitButton.setOnAction(e -> {
-            try {
-                Map<String, Object> submission = director.constructSubmission(
-                        teamId,
-                        conferenceName,
-                        selectedFile[0]);
+        Button submitButton = new Button("✅ Submit");
+        Label statusLabel = new Label();
 
-                if (submission.get("fileId") != null) {
-                    statusLabel.setText("✅ Submission successful!");
-                    statusLabel.setStyle("-fx-text-fill: green;");
-                } else {
-                    statusLabel.setText("❌ Upload failed. Please try again.");
-                    statusLabel.setStyle("-fx-text-fill: red;");
-                }
-            } catch (Exception ex) {
-                statusLabel.setText("❌ Error: " + ex.getMessage());
+        submitButton.setOnAction(e -> {
+            if (selectedFile == null) {
+                statusLabel.setText("❌ Please select a file before submitting.");
+                statusLabel.setStyle("-fx-text-fill: red;");
+                return;
+            }
+
+            String fileId = DriveUploader.uploadFile(selectedFile);
+            if (fileId != null) {
+                statusLabel.setText("✅ Submission to " + conferenceName + " uploaded!\n📋 File ID: " + fileId);
+                statusLabel.setStyle("-fx-text-fill: green;");
+            } else {
+                statusLabel.setText("❌ Upload failed. Please try again.");
                 statusLabel.setStyle("-fx-text-fill: red;");
             }
         });
@@ -824,4 +748,23 @@ private class ConferenceSubmissionBuilder implements SubmissionBuilder {
         Scene scene = new Scene(root, 450, 350);
         popupStage.setScene(scene);
         popupStage.show();
+    }
+
+    private void handleFileUpload() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select File to Upload");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+        selectedFile = fileChooser.showOpenDialog(null);
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
 }
