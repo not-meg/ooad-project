@@ -207,10 +207,6 @@ public class AdminDashboardController {
                 handleScheduleView();
                 break;
 
-            case "analyticsLink":
-                System.out.println("Navigating to Analytics...");
-                break;
-
             case "logoutLink":
                 System.out.println("Logging out...");
                 // Optionally call a logout handler here

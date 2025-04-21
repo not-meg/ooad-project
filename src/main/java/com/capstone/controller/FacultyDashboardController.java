@@ -314,50 +314,38 @@ public class FacultyDashboardController {
 
         // Fetch reviews assigned to this faculty using the logged-in faculty ID
         List<Review> reviews = reviewService.getReviewsByFacultyId(loggedInFacultyID);
-
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Review Schedule");
-
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(15));
         layout.setAlignment(Pos.TOP_CENTER);
-
         if (reviews.isEmpty()) {
             layout.getChildren().add(new Label("No reviews scheduled for you."));
         } else {
             for (Review review : reviews) {
                 VBox reviewBox = new VBox(5);
                 reviewBox.setStyle("-fx-border-color: gray; -fx-border-width: 1; -fx-padding: 10; -fx-background-color: #f8f8f8;");
-
                 Label reviewInfo = new Label("Team ID: " + review.getTeamId() +
                                             "\nTitle: " + review.getTitle() +
                                             "\nPhase: " + review.getPhase() +
                                             "\nStatus: " + review.getStatus() +
                                             "\nDate: " + review.getReviewDate() +
                                             "\nTime: " + review.getReviewTime());
-
-                Button viewDetailsButton = new Button("📄 View Details");
-                viewDetailsButton.setOnAction(e -> handleViewReviewDetails(review.getId()));
-
-                reviewBox.getChildren().addAll(reviewInfo, viewDetailsButton);
+                // The following two lines are REMOVED to eliminate the "View Details" button
+                // Button viewDetailsButton = new Button("📄 View Details");
+                // viewDetailsButton.setOnAction(e -> handleViewReviewDetails(review.getId()));
+                reviewBox.getChildren().add(reviewInfo); // Only add the review information
                 layout.getChildren().add(reviewBox);
             }
         }
-
         ScrollPane scrollPane = new ScrollPane(layout);
         scrollPane.setFitToWidth(true);
-
         Scene scene = new Scene(scrollPane, 500, 400);
         popupStage.setScene(scene);
         popupStage.showAndWait();
     }
-
-    private void handleViewReviewDetails(String reviewId) {
-        // Handle the logic for viewing detailed review (e.g., open another popup)
-        System.out.println("View details for review ID: " + reviewId);
-    }
-
+    
     @FXML
     public void onDownloadButtonClick(String fileId) {
         String directoryPath = "downloaded_files";
@@ -399,7 +387,7 @@ public class FacultyDashboardController {
     // Phase selector
     Label phaseLabel = new Label("Select Phase:");
     ComboBox<Integer> phaseSelector = new ComboBox<>();
-    phaseSelector.getItems().addAll(1, 2, 3, 4, 5); // Phase options
+    phaseSelector.getItems().addAll(1, 2, 3, 4); // Phase options
     phaseSelector.setValue(1); // default selection
     IntegerProperty selectedPhase = new SimpleIntegerProperty(phaseSelector.getValue());
     phaseSelector.setOnAction(e -> selectedPhase.set(phaseSelector.getValue()));
