@@ -150,7 +150,8 @@ public class FacultyDashboardController {
                 System.out.println("Navigating to Feedback... (TODO)");
                 break;
             case "Results":
-                System.out.println("Navigating to Results... (TODO)");
+                handleViewResults();
+                System.out.println("Navigating to Results... ");
                 break;
             case "Logout":
                 handleLogout();
@@ -301,6 +302,62 @@ public class FacultyDashboardController {
 
         showAlert("✅ Success", "File downloaded as PDF to:\n" + destinationPath);
     }
+
+    private void handleViewResults() {
+    if (facultyService == null) {
+        System.out.println("Error: facultyService is null!");
+        return;
+    }
+
+    List<Team> teams = facultyService.getTeamsByFacultyID(loggedInFacultyID);
+
+    Stage popupStage = new Stage();
+    popupStage.initModality(Modality.APPLICATION_MODAL);
+    popupStage.setTitle("Results - Teams & Members");
+
+    VBox layout = new VBox(15);
+    layout.setPadding(new Insets(15));
+    layout.setAlignment(Pos.TOP_CENTER);
+
+    if (teams.isEmpty()) {
+        layout.getChildren().add(new Label("No teams assigned."));
+    } else {
+        for (Team team : teams) {
+            VBox teamBox = new VBox(5);
+            teamBox.setStyle("-fx-border-color: gray; -fx-border-width: 1; -fx-padding: 10; -fx-background-color: #f2f2f2;");
+
+            Label teamInfo = new Label("Team ID: " + team.getTeamID() +
+                                       "\nProblem: " + team.getProblemStatement());
+
+            Button toggleMembersButton = new Button("👥 Show Team Members");
+
+            VBox membersBox = new VBox();
+            membersBox.setVisible(false);
+
+            // Populate members
+            for (String studentId : team.getStudentIDs()) {
+                Label studentLabel = new Label("👤 " + studentId); // optionally fetch student name if available
+                membersBox.getChildren().add(studentLabel);
+            }
+
+            toggleMembersButton.setOnAction(e -> {
+                boolean visible = membersBox.isVisible();
+                membersBox.setVisible(!visible);
+                toggleMembersButton.setText(visible ? "👥 Show Team Members" : "👥 Hide Team Members");
+            });
+
+            teamBox.getChildren().addAll(teamInfo, toggleMembersButton, membersBox);
+            layout.getChildren().add(teamBox);
+        }
+    }
+
+    ScrollPane scrollPane = new ScrollPane(layout);
+    scrollPane.setFitToWidth(true);
+
+    Scene scene = new Scene(scrollPane, 500, 500);
+    popupStage.setScene(scene);
+    popupStage.showAndWait();
+}
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(AlertType.INFORMATION);
