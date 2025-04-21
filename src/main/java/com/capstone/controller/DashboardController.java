@@ -32,6 +32,9 @@ import com.capstone.CapstoneApplication;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -42,7 +45,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.ContentDisplay;
 import java.util.HashMap;
 import java.util.Map;
-
 
 public class DashboardController {
 
@@ -61,7 +63,7 @@ public class DashboardController {
     private Label settingsLink;
 
     @FXML
-    private Button logoutButton;  // Add this line
+    private Button logoutButton; // Add this line
 
     private boolean isSidebarOpen = false;
 
@@ -72,7 +74,8 @@ public class DashboardController {
     private TeamService teamService;
     private NotificationService notificationService;
 
-    public DashboardController() {}
+    public DashboardController() {
+    }
 
     @Autowired
     private PhaseSubmissionController phaseSubmissionController;
@@ -164,7 +167,7 @@ public class DashboardController {
                 break;
             case "Notification":
                 System.out.println("Navigating to Notification... ");
-                //showTeamStatusNotification();
+                // showTeamStatusNotification();
                 showNotificationsPopup();
                 break;
             case "Submission":
@@ -189,7 +192,7 @@ public class DashboardController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
                     loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
                     Parent root = loader.load();
-                    
+
                     Stage stage = (Stage) clickedLabel.getScene().getWindow();
                     Scene scene = new Scene(root);
                     stage.setScene(scene);
@@ -295,12 +298,12 @@ public class DashboardController {
             FileChooser fileChooser = new FileChooser();
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
             selectedFile = fileChooser.showOpenDialog(null);
-        
+
             if (selectedFile != null) {
                 fileLabel.setText("📁 " + selectedFile.getName());
             }
         });
-        
+
         Button submitButton = new Button("✅ Submit");
         Label statusLabel = new Label();
 
@@ -308,14 +311,13 @@ public class DashboardController {
             String selectedPhase = phaseComboBox.getValue();
             handleSubmission(selectedPhase, selectedFile, statusLabel);
         });
-        
 
         VBox phaseSection = new VBox(5, phaseLabel, phaseComboBox);
         VBox uploadSection = new VBox(5, uploadButton, fileLabel);
         VBox submitSection = new VBox(10, submitButton, statusLabel);
 
         root.getChildren().addAll(titleLabel, phaseSection, uploadSection, submitSection);
-    
+
         Scene scene = new Scene(root, 450, 400);
         popupStage.setScene(scene);
         popupStage.show();
@@ -412,28 +414,6 @@ public class DashboardController {
     }
 
     @FXML
-    private void showTeamStatusNotification() {
-        if (teamService == null || loggedInStudentID == null) {
-            showAlert("Error", "Team service or student ID is not initialized.");
-            return;
-        }
-
-        Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
-        if (teamOpt.isPresent()) {
-            Team team = teamOpt.get();
-            String teamStatus = team.getStatus(); // Get the status of the team
-
-            // Create and display the alert with team status
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Team Status");
-            alert.setHeaderText("Your Team Status");
-            alert.setContentText("The current status of your team is: " + teamStatus);
-            alert.showAndWait();
-        } else {
-            showAlert("Team Not Found", "You are not part of any team.");
-        }
-    }
-
     private void showNotificationsPopup() {
         if (teamService == null || loggedInStudentID == null) {
             showAlert("Error", "Team service or student not initialized.");
@@ -450,8 +430,20 @@ public class DashboardController {
             return;
         }
 
-        String teamId = teamOpt.get().getTeamID();
+        Team team = teamOpt.get();
+        String teamId = team.getTeamID();
         List<Notification> notifications = notificationService.getNotificationsByTeamId(teamId);
+
+        // ✅ Inject rejection message dynamically (frontend only)
+        if ("Rejected".equalsIgnoreCase(team.getStatus())) {
+            Notification rejectionNote = new Notification();
+            rejectionNote.setTeamId(teamId);
+            rejectionNote.setTitle("Team Rejected");
+            rejectionNote.setComments("Your team has been rejected.");
+            rejectionNote.setCreated_at(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant())); // ✅
+
+            notifications.add(0, rejectionNote); // Add to top
+        }
 
         Stage popupStage = new Stage();
         popupStage.setTitle("📢 Team Notifications");
@@ -549,8 +541,6 @@ public class DashboardController {
         detailsStage.show();
     }
 
-
-    
     @FXML
     private void handleMentorFeedback() {
         if (submissionService == null || teamService == null || loggedInStudentID == null) {
@@ -613,44 +603,43 @@ public class DashboardController {
             showAlert("Error", "Team service not initialized or student not logged in.");
             return;
         }
-    
+
         Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
         if (!teamOpt.isPresent()) {
             showAlert("Error", "Team not found! Please contact support.");
             return;
         }
-    
+
         Team team = teamOpt.get();
-    
+
         if (!"Accepted".equalsIgnoreCase(team.getStatus())) {
             showAlert("Access Denied", "Only accepted teams can submit to the conference.");
             return;
         }
-    
+
         showConferenceSelector(team.getTeamID());
     }
 
     private void showConferenceSelector(String teamId) {
         Stage selectorStage = new Stage();
         selectorStage.setTitle("🎓 Select Conference");
-    
+
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER);
-    
+
         Label instructionLabel = new Label("📑 Choose a conference to submit to:");
         instructionLabel.setStyle("-fx-font-size: 16px;");
-    
+
         ComboBox<String> conferenceDropdown = new ComboBox<>();
         // You can dynamically load this list from a service or DB
         conferenceDropdown.getItems().addAll(
-            "ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025"
-        );
+                "ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025");
         conferenceDropdown.setPromptText("Select a conference");
-    
+
         Button continueButton = new Button("📝 Continue");
         Label warningLabel = new Label();
-    
+
         continueButton.setOnAction(e -> {
             String selectedConference = conferenceDropdown.getValue();
             if (selectedConference == null || selectedConference.isEmpty()) {
@@ -661,23 +650,23 @@ public class DashboardController {
                 showConferencePopup(teamId, selectedConference); // pass selection forward!
             }
         });
-    
+
         root.getChildren().addAll(instructionLabel, conferenceDropdown, continueButton, warningLabel);
         Scene scene = new Scene(root, 350, 250);
         selectorStage.setScene(scene);
         selectorStage.show();
-    }    
-    
+    }
+
     @FXML
     private void handleLogout(ActionEvent event) {
         try {
             // Create FXMLLoader with Spring's controller factory
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/homepage.fxml"));
             loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
-            
+
             // Load the FXML
             Parent root = loader.load();
-            
+
             // Get the current stage and set new scene
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             Scene scene = new Scene(root);
@@ -717,9 +706,13 @@ public class DashboardController {
     // First, add these interfaces and classes
     private interface SubmissionBuilder {
         SubmissionBuilder setTeamId(String teamId);
+
         SubmissionBuilder setConferenceName(String name);
+
         SubmissionBuilder setSubmissionFile(File file);
+
         SubmissionBuilder upload();
+
         Map<String, Object> build();
     }
 
@@ -732,10 +725,10 @@ public class DashboardController {
 
         public Map<String, Object> constructSubmission(String teamId, String conferenceName, File file) {
             return builder.setTeamId(teamId)
-                         .setConferenceName(conferenceName)
-                         .setSubmissionFile(file)
-                         .upload()
-                         .build();
+                    .setConferenceName(conferenceName)
+                    .setSubmissionFile(file)
+                    .upload()
+                    .build();
         }
     }
 
@@ -780,7 +773,7 @@ public class DashboardController {
         @Override
         public Map<String, Object> build() {
             validateSubmission();
-            
+
             Map<String, Object> submission = new HashMap<>();
             submission.put("teamId", teamId);
             submission.put("conferenceName", conferenceName);
@@ -826,8 +819,7 @@ public class DashboardController {
         uploadButton.setOnAction(e -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
-            );
+                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
             selectedFile[0] = fileChooser.showOpenDialog(popupStage);
             if (selectedFile[0] != null) {
                 fileLabel.setText("📁 " + selectedFile[0].getName());
@@ -837,10 +829,9 @@ public class DashboardController {
         submitButton.setOnAction(e -> {
             try {
                 Map<String, Object> submission = director.constructSubmission(
-                    teamId, 
-                    conferenceName, 
-                    selectedFile[0]
-                );
+                        teamId,
+                        conferenceName,
+                        selectedFile[0]);
 
                 if (submission.get("fileId") != null) {
                     statusLabel.setText("✅ Submission successful!");
