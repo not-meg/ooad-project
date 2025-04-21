@@ -118,7 +118,27 @@ public class FacultyDashboardController {
 
         switch (section) {
             case "Home":
-                System.out.println("Navigating to Faculty Dashboard... (TODO)");
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/faculty_dashboard.fxml"));
+                    loader.setControllerFactory(CapstoneApplication.getApplicationContext()::getBean);
+
+                    Parent root = loader.load();
+
+                    FacultyDashboardController controller = loader.getController();
+                    controller.setFacultyService(facultyService);
+                    controller.setPhaseSubmissionService(submissionService);
+                    controller.setLoggedInFacultyID(loggedInFacultyID);
+
+                    Stage stage = (Stage) homeLink.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("Faculty Dashboard");
+                    stage.show();
+
+                    System.out.println("✅ Reloaded Faculty Dashboard");
+                } catch (IOException e) {
+                    System.out.println("❌ Error reloading dashboard: " + e.getMessage());
+                    e.printStackTrace();
+                }
                 break;
             case "Teams":
                 handleViewTeams();
