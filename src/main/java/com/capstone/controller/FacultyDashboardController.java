@@ -56,7 +56,6 @@ public class FacultyDashboardController {
     @FXML private Label homeLink;
     @FXML private Label teamsLink;
     @FXML private Label reviewLink;
-    @FXML private Label feedbackLink;
     @FXML private Label resultsLink;
     @FXML private Label logoutLink;
 
@@ -161,9 +160,6 @@ public class FacultyDashboardController {
                 break;
             case "Review Schedule":
                 System.out.println("Navigating to Review Schedule... (TODO)");
-                break;
-            case "Feedback":
-                System.out.println("Navigating to Feedback... (TODO)");
                 break;
             case "Results":
                 handleViewResults();

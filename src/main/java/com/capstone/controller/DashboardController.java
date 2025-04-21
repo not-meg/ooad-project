@@ -6,7 +6,6 @@ import com.capstone.service.TeamService;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.PhaseSubmissionService;
 import com.capstone.service.StudentGradeService;
-import com.capstone.model.StudentGrade;
 import com.capstone.service.NotificationService;
 import com.capstone.model.Notification;
 
@@ -636,7 +635,6 @@ public class DashboardController {
         instructionLabel.setStyle("-fx-font-size: 16px;");
 
         ComboBox<String> conferenceDropdown = new ComboBox<>();
-        // You can dynamically load this list from a service or DB
         conferenceDropdown.getItems().addAll(
                 "ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025");
         conferenceDropdown.setPromptText("Select a conference");
