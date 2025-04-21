@@ -5,6 +5,8 @@ import com.capstone.model.Team;
 import com.capstone.service.TeamService;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.PhaseSubmissionService;
+import com.capstone.service.StudentGradeService;
+import com.capstone.model.StudentGrade;
 import com.capstone.service.NotificationService;
 import com.capstone.model.Notification;
 
@@ -73,6 +75,7 @@ public class DashboardController {
 
     private TeamService teamService;
     private NotificationService notificationService;
+    private StudentGradeService studentGradeService;
 
     public DashboardController() {
     }
@@ -92,6 +95,12 @@ public class DashboardController {
     public void setNotificationService(NotificationService notificationService) {
         this.notificationService = notificationService;
     }
+
+    @Autowired
+    public void setStudentGradeService(StudentGradeService studentGradeService) {
+        this.studentGradeService = studentGradeService;
+    }
+
 
     private PhaseSubmissionService submissionService;
 
@@ -351,67 +360,62 @@ public class DashboardController {
     }
 
     private void showResultsPopup() {
-        Stage popupStage = new Stage();
-        popupStage.setTitle("📊 Academic Results");
+    Stage popupStage = new Stage();
+    popupStage.setTitle("📊 Academic Results");
 
-        VBox root = new VBox(15);
-        root.setPadding(new Insets(20));
-        root.setAlignment(Pos.TOP_CENTER);
+    VBox root = new VBox(15);
+    root.setPadding(new Insets(20));
+    root.setAlignment(Pos.TOP_CENTER);
 
-        Label titleLabel = new Label("📚 Phase-wise Results");
-        titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+    Label titleLabel = new Label("📚 Phase-wise Results");
+    titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
 
-        Label selectPhaseLabel = new Label("Select Phase:");
-        ComboBox<String> phaseDropdown = new ComboBox<>();
-        phaseDropdown.getItems().addAll("Phase 1", "Phase 2", "Phase 3", "Phase 4");
-        phaseDropdown.setPromptText("Choose Phase");
+    Label selectPhaseLabel = new Label("Select Phase:");
+    ComboBox<Integer> phaseDropdown = new ComboBox<>();
+    phaseDropdown.getItems().addAll(1, 2, 3, 4); // Use Integer for phase
+    phaseDropdown.setPromptText("Choose Phase");
 
-        Label isa1Label = new Label("ISA 1: -");
-        Label isa2Label = new Label("ISA 2: -");
-        Label esaLabel = new Label("ESA  : -");
+    Label isa1Label = new Label("ISA 1: -");
+    Label isa2Label = new Label("ISA 2: -");
+    Label esaLabel = new Label("ESA  : -");
 
-        VBox resultSection = new VBox(10, isa1Label, isa2Label, esaLabel);
-        resultSection.setPadding(new Insets(10));
-        resultSection.setStyle("-fx-border-color: #aaa; -fx-border-width: 1; -fx-border-radius: 5; -fx-padding: 10;");
-        resultSection.setAlignment(Pos.CENTER_LEFT);
+    VBox resultSection = new VBox(10, isa1Label, isa2Label, esaLabel);
+    resultSection.setPadding(new Insets(10));
+    resultSection.setStyle("-fx-border-color: #aaa; -fx-border-width: 1; -fx-border-radius: 5; -fx-padding: 10;");
+    resultSection.setAlignment(Pos.CENTER_LEFT);
 
-        phaseDropdown.setOnAction(e -> {
-            String selected = phaseDropdown.getValue();
-            // You can fetch real data here using service call if needed
-            switch (selected) {
-                case "Phase 1":
-                    isa1Label.setText("ISA 1: 12");
-                    isa2Label.setText("ISA 2: 14");
-                    esaLabel.setText("ESA  : 24");
-                    break;
-                case "Phase 2":
-                    isa1Label.setText("ISA 1: 13");
-                    isa2Label.setText("ISA 2: 15");
-                    esaLabel.setText("ESA  : 26");
-                    break;
-                case "Phase 3":
-                    isa1Label.setText("ISA 1: 11");
-                    isa2Label.setText("ISA 2: 12");
-                    esaLabel.setText("ESA  : 22");
-                    break;
-                case "Phase 4":
-                    isa1Label.setText("ISA 1: 14");
-                    isa2Label.setText("ISA 2: 15");
-                    esaLabel.setText("ESA  : 28");
-                    break;
-                default:
-                    isa1Label.setText("ISA 1: -");
-                    isa2Label.setText("ISA 2: -");
-                    esaLabel.setText("ESA  : -");
-            }
-        });
 
-        root.getChildren().addAll(titleLabel, selectPhaseLabel, phaseDropdown, resultSection);
-
-        Scene scene = new Scene(root, 400, 300);
-        popupStage.setScene(scene);
-        popupStage.show();
+    if (studentGradeService == null) {
+        studentGradeService = CapstoneApplication.getApplicationContext().getBean(StudentGradeService.class);
     }
+
+
+    phaseDropdown.setOnAction(e -> {
+        Integer selectedPhase = phaseDropdown.getValue();
+        if (selectedPhase != null && loggedInStudentID != null && teamIDLabel.getText() != null) {
+            studentGradeService.getGradeByStudentTeamPhase(loggedInStudentID, teamIDLabel.getText(), selectedPhase)
+                    .ifPresentOrElse(grade -> {
+                        isa1Label.setText("ISA 1: " + (grade.getIsa1Grade() != null ? grade.getIsa1Grade() : "-"));
+                        isa2Label.setText("ISA 2: " + (grade.getIsa2Grade() != null ? grade.getIsa2Grade() : "-"));
+                        esaLabel.setText("ESA  : " + (grade.getEsaGrade() != null ? grade.getEsaGrade() : "-"));
+                    }, () -> {
+                        isa1Label.setText("ISA 1: -");
+                        isa2Label.setText("ISA 2: -");
+                        esaLabel.setText("ESA  : -");
+                    });
+        } else {
+            isa1Label.setText("ISA 1: -");
+            isa2Label.setText("ISA 2: -");
+            esaLabel.setText("ESA  : -");
+        }
+    });
+
+    root.getChildren().addAll(titleLabel, selectPhaseLabel, phaseDropdown, resultSection);
+
+    Scene scene = new Scene(root, 400, 300);
+    popupStage.setScene(scene);
+    popupStage.show();
+}
 
     @FXML
     private void showNotificationsPopup() {
