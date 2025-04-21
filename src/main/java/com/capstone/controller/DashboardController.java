@@ -244,7 +244,10 @@ public class DashboardController {
 
     @FXML
     private void handleConference() {
-        ConferenceSubmission ui = new ConferenceSubmission(teamService, loggedInStudentID);
+        ConferenceSubmission ui = new ConferenceSubmission.ConferenceBuilder(teamService, loggedInStudentID)
+            // Optionally customize UI configuration
+            //.withUIConfiguration(new CustomConferenceUIConfig())
+            .build();
         ui.launchConferenceSubmission();
     }
     
@@ -673,122 +676,153 @@ class MentorFeedbackPopup {
         alert.showAndWait();
     }
 }
-class ConferenceSubmission {
 
+class ConferenceSubmission {
     private final TeamService teamService;
     private final String loggedInStudentID;
-
+    private final ConferenceUIConfiguration uiConfig;
     private File selectedFile;
 
-    public ConferenceSubmission(TeamService teamService, String loggedInStudentID) {
-        this.teamService = teamService;
-        this.loggedInStudentID = loggedInStudentID;
+    private ConferenceSubmission(ConferenceBuilder builder) {
+        this.teamService = builder.teamService;
+        this.loggedInStudentID = builder.loggedInStudentID;
+        this.uiConfig = builder.uiConfig;
     }
 
     public void launchConferenceSubmission() {
+        if (!validatePrerequisites()) return;
+        
+        Team team = getTeam();
+        if (team == null || !isTeamEligible(team)) return;
+        
+        showConferenceSelector(team.getTeamID());
+    }
+
+    private boolean validatePrerequisites() {
         if (teamService == null || loggedInStudentID == null) {
             showAlert("Error", "Team service not initialized or student not logged in.");
-            return;
+            return false;
         }
+        return true;
+    }
 
+    private Team getTeam() {
         Optional<Team> teamOpt = teamService.getTeamByStudentID(loggedInStudentID);
         if (!teamOpt.isPresent()) {
             showAlert("Error", "Team not found! Please contact support.");
-            return;
+            return null;
         }
+        return teamOpt.get();
+    }
 
-        Team team = teamOpt.get();
-
+    private boolean isTeamEligible(Team team) {
         if (!"Accepted".equalsIgnoreCase(team.getStatus())) {
             showAlert("Access Denied", "Only accepted teams can submit to the conference.");
-            return;
+            return false;
         }
-
-        showConferenceSelector(team.getTeamID());
+        return true;
     }
 
     private void showConferenceSelector(String teamId) {
         Stage selectorStage = new Stage();
-        selectorStage.setTitle("🎓 Select Conference");
+        selectorStage.setTitle(uiConfig.getSelectorTitle());
 
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER);
 
-        Label instructionLabel = new Label("📑 Choose a conference to submit to:");
+        Label instructionLabel = new Label(uiConfig.getInstructionText());
         instructionLabel.setStyle("-fx-font-size: 16px;");
 
         ComboBox<String> conferenceDropdown = new ComboBox<>();
-        conferenceDropdown.getItems().addAll(
-                "ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025"
-        );
+        conferenceDropdown.getItems().addAll(uiConfig.getAvailableConferences());
         conferenceDropdown.setPromptText("Select a conference");
 
-        Button continueButton = new Button("📝 Continue");
+        Button continueButton = new Button(uiConfig.getContinueButtonText());
         Label warningLabel = new Label();
 
-        continueButton.setOnAction(e -> {
-            String selectedConference = conferenceDropdown.getValue();
-            if (selectedConference == null || selectedConference.isEmpty()) {
-                warningLabel.setText("🚨 Please select a conference to proceed.");
-                warningLabel.setStyle("-fx-text-fill: red;");
-            } else {
-                selectorStage.close();
-                showConferencePopup(teamId, selectedConference);
-            }
-        });
+        setupSelectorActions(selectorStage, teamId, conferenceDropdown, continueButton, warningLabel);
 
         root.getChildren().addAll(instructionLabel, conferenceDropdown, continueButton, warningLabel);
-        Scene scene = new Scene(root, 350, 250);
-        selectorStage.setScene(scene);
+        selectorStage.setScene(new Scene(root, uiConfig.getSelectorWidth(), uiConfig.getSelectorHeight()));
         selectorStage.show();
+    }
+
+    private void setupSelectorActions(Stage stage, String teamId, ComboBox<String> dropdown, 
+                                      Button continueButton, Label warning) {
+        dropdown.setOnAction(e -> warning.setText(""));
+        
+        continueButton.setOnAction(e -> {
+            String selected = dropdown.getValue();
+            if (selected == null || selected.isEmpty()) {
+                warning.setText("🚨 Please select a conference to proceed.");
+                warning.setStyle("-fx-text-fill: red;");
+            } else {
+                stage.close();
+                showConferencePopup(teamId, selected);
+            }
+        });
     }
 
     private void showConferencePopup(String teamId, String conferenceName) {
         Stage popupStage = new Stage();
-        popupStage.setTitle("📢 Submit to " + conferenceName);
+        popupStage.setTitle(String.format(uiConfig.getPopupTitleFormat(), conferenceName));
 
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER_LEFT);
 
-        Label titleLabel = new Label("📤 Upload Material for " + conferenceName);
+        setupPopupContent(root, conferenceName);
+        
+        popupStage.setScene(new Scene(root, uiConfig.getPopupWidth(), uiConfig.getPopupHeight()));
+        popupStage.show();
+    }
+
+    private void setupPopupContent(VBox root, String conferenceName) {
+        Label titleLabel = new Label(String.format(uiConfig.getUploadTitleFormat(), conferenceName));
         titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
         Label fileLabel = new Label("📁 No file selected.");
         Button uploadButton = new Button("Choose File");
+        Button submitButton = new Button("✅ Submit");
+        Label statusLabel = new Label();
 
-        uploadButton.setOnAction(e -> {
+        setupPopupActions(uploadButton, submitButton, fileLabel, statusLabel, conferenceName);
+
+        root.getChildren().addAll(titleLabel, uploadButton, fileLabel, submitButton, statusLabel);
+    }
+
+    private void setupPopupActions(Button upload, Button submit, Label fileLabel, 
+                                 Label statusLabel, String conferenceName) {
+        upload.setOnAction(e -> {
             handleFileUpload();
             if (selectedFile != null) {
                 fileLabel.setText("📁 " + selectedFile.getName());
             }
         });
 
-        Button submitButton = new Button("✅ Submit");
-        Label statusLabel = new Label();
+        submit.setOnAction(e -> handleSubmission(statusLabel, conferenceName));
+    }
 
-        submitButton.setOnAction(e -> {
-            if (selectedFile == null) {
-                statusLabel.setText("❌ Please select a file before submitting.");
-                statusLabel.setStyle("-fx-text-fill: red;");
-                return;
-            }
+    private void handleSubmission(Label statusLabel, String conferenceName) {
+        if (selectedFile == null) {
+            statusLabel.setText("❌ Please select a file before submitting.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+            return;
+        }
 
-            String fileId = DriveUploader.uploadFile(selectedFile);
-            if (fileId != null) {
-                statusLabel.setText("✅ Submission to " + conferenceName + " uploaded!\n📋 File ID: " + fileId);
-                statusLabel.setStyle("-fx-text-fill: green;");
-            } else {
-                statusLabel.setText("❌ Upload failed. Please try again.");
-                statusLabel.setStyle("-fx-text-fill: red;");
-            }
-        });
+        String fileId = DriveUploader.uploadFile(selectedFile);
+        updateSubmissionStatus(statusLabel, fileId, conferenceName);
+    }
 
-        root.getChildren().addAll(titleLabel, uploadButton, fileLabel, submitButton, statusLabel);
-        Scene scene = new Scene(root, 450, 350);
-        popupStage.setScene(scene);
-        popupStage.show();
+    private void updateSubmissionStatus(Label statusLabel, String fileId, String conferenceName) {
+        if (fileId != null) {
+            statusLabel.setText("✅ Submission to " + conferenceName + " uploaded!\n📋 File ID: " + fileId);
+            statusLabel.setStyle("-fx-text-fill: green;");
+        } else {
+            statusLabel.setText("❌ Upload failed. Please try again.");
+            statusLabel.setStyle("-fx-text-fill: red;");
+        }
     }
 
     private void handleFileUpload() {
@@ -808,4 +842,55 @@ class ConferenceSubmission {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
+    // Builder class
+    public static class ConferenceBuilder {
+        private TeamService teamService;
+        private String loggedInStudentID;
+        private ConferenceUIConfiguration uiConfig = new DefaultConferenceUIConfig();
+
+        public ConferenceBuilder(TeamService teamService, String loggedInStudentID) {
+            this.teamService = teamService;
+            this.loggedInStudentID = loggedInStudentID;
+        }
+
+        public ConferenceBuilder withUIConfiguration(ConferenceUIConfiguration config) {
+            this.uiConfig = config;
+            return this;
+        }
+
+        public ConferenceSubmission build() {
+            return new ConferenceSubmission(this);
+        }
+    }
+}
+
+// Interface for UI configuration (Open-Closed Principle)
+interface ConferenceUIConfiguration {
+    String getSelectorTitle();
+    String getInstructionText();
+    String[] getAvailableConferences();
+    String getContinueButtonText();
+    String getPopupTitleFormat();
+    String getUploadTitleFormat();
+    int getSelectorWidth();
+    int getSelectorHeight();
+    int getPopupWidth();
+    int getPopupHeight();
+}
+
+// Default implementation
+class DefaultConferenceUIConfig implements ConferenceUIConfiguration {
+    @Override public String getSelectorTitle() { return "🎓 Select Conference"; }
+    @Override public String getInstructionText() { return "📑 Choose a conference to submit to:"; }
+    @Override public String[] getAvailableConferences() { 
+        return new String[]{"ICML 2025", "NeurIPS 2025", "CVPR 2025", "ACL 2025"}; 
+    }
+    @Override public String getContinueButtonText() { return "📝 Continue"; }
+    @Override public String getPopupTitleFormat() { return "📢 Submit to %s"; }
+    @Override public String getUploadTitleFormat() { return "📤 Upload Material for %s"; }
+    @Override public int getSelectorWidth() { return 350; }
+    @Override public int getSelectorHeight() { return 250; }
+    @Override public int getPopupWidth() { return 450; }
+    @Override public int getPopupHeight() { return 350; }
 }
