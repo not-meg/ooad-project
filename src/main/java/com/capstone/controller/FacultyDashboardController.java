@@ -5,8 +5,18 @@ import com.capstone.model.Team;
 import com.capstone.service.DriveUploader;
 import com.capstone.service.FacultyService;
 import com.capstone.service.PhaseSubmissionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.capstone.service.StudentGradeService;
+import com.capstone.model.StudentGrade;
 import com.capstone.CapstoneApplication;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.HttpURLConnection;
+import javafx.scene.control.ComboBox;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import java.net.URL;
+import java.io.OutputStream;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -57,6 +67,9 @@ public class FacultyDashboardController {
     private FacultyService facultyService;
     private PhaseSubmissionService submissionService;
 
+    @Autowired
+    private StudentGradeService studentGradeService;
+
     private String loggedInFacultyID;
 
     public FacultyDashboardController() {}
@@ -69,6 +82,9 @@ public class FacultyDashboardController {
         this.submissionService = submissionService;
     }
 
+    public void setStudentGradeService(StudentGradeService studentGradeService) {
+        this.studentGradeService = studentGradeService;
+    }
     public void setLoggedInFacultyID(String facultyID) {
         this.loggedInFacultyID = facultyID;
         loadFacultyDetails();
@@ -319,6 +335,16 @@ public class FacultyDashboardController {
     layout.setPadding(new Insets(15));
     layout.setAlignment(Pos.TOP_CENTER);
 
+    // Phase selector
+    Label phaseLabel = new Label("Select Phase:");
+    ComboBox<Integer> phaseSelector = new ComboBox<>();
+    phaseSelector.getItems().addAll(1, 2, 3, 4, 5); // Phase options
+    phaseSelector.setValue(1); // default selection
+    IntegerProperty selectedPhase = new SimpleIntegerProperty(phaseSelector.getValue());
+    phaseSelector.setOnAction(e -> selectedPhase.set(phaseSelector.getValue()));
+
+    layout.getChildren().addAll(phaseLabel, phaseSelector);
+
     if (teams.isEmpty()) {
         layout.getChildren().add(new Label("No teams assigned."));
     } else {
@@ -330,14 +356,20 @@ public class FacultyDashboardController {
                                        "\nProblem: " + team.getProblemStatement());
 
             Button toggleMembersButton = new Button("👥 Show Team Members");
-
             VBox membersBox = new VBox();
             membersBox.setVisible(false);
 
-            // Populate members
             for (String studentId : team.getStudentIDs()) {
-                Label studentLabel = new Label("👤 " + studentId); // optionally fetch student name if available
-                membersBox.getChildren().add(studentLabel);
+                HBox studentRow = new HBox(10);
+                studentRow.setAlignment(Pos.CENTER_LEFT);
+
+                Label studentLabel = new Label("👤 " + studentId);
+
+                Button uploadGradeButton = new Button("📥 Upload Grades");
+                uploadGradeButton.setOnAction(event -> showGradeInputDialog(studentId, team.getTeamID(), selectedPhase.get()));
+
+                studentRow.getChildren().addAll(studentLabel, uploadGradeButton);
+                membersBox.getChildren().add(studentRow);
             }
 
             toggleMembersButton.setOnAction(e -> {
@@ -354,9 +386,69 @@ public class FacultyDashboardController {
     ScrollPane scrollPane = new ScrollPane(layout);
     scrollPane.setFitToWidth(true);
 
-    Scene scene = new Scene(scrollPane, 500, 500);
+    Scene scene = new Scene(scrollPane, 600, 600);
     popupStage.setScene(scene);
     popupStage.showAndWait();
+}
+
+
+    private void uploadGrade(String studentId, String teamId, int phase, String isa1, String isa2, String esa) {
+    try {
+        URL url = new URL("http://localhost:8080/api/grades/save");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+
+        // Construct grade object as JSON
+        String jsonInput = String.format(
+            "{" +
+                "\"studentId\":\"%s\"," +
+                "\"teamId\":\"%s\"," +
+                "\"phase\":%d," +
+                "\"isa1Grade\":\"%s\"," +
+                "\"isa2Grade\":\"%s\"," +
+                "\"esaGrade\":\"%s\"" +
+            "}",
+            studentId, teamId, phase, isa1, isa2, esa
+        );
+
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInput.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode == 200 || responseCode == 201) {
+            showAlert("Success", "Grades uploaded successfully!");
+        } else {
+            showAlert("Error", "Failed to upload grades. HTTP " + responseCode);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        showAlert("Error", "Exception occurred while uploading grades: " + e.getMessage());
+    }
+}
+
+private void showGradeInputDialog(String studentId, String teamId, int phase) {
+    TextInputDialog isa1Dialog = new TextInputDialog();
+    isa1Dialog.setTitle("ISA1 Grade");
+    isa1Dialog.setHeaderText("Enter ISA1 grade for student " + studentId);
+    String isa1 = isa1Dialog.showAndWait().orElse("");
+
+    TextInputDialog isa2Dialog = new TextInputDialog();
+    isa2Dialog.setTitle("ISA2 Grade");
+    isa2Dialog.setHeaderText("Enter ISA2 grade for student " + studentId);
+    String isa2 = isa2Dialog.showAndWait().orElse("");
+
+    TextInputDialog esaDialog = new TextInputDialog();
+    esaDialog.setTitle("ESA Grade");
+    esaDialog.setHeaderText("Enter ESA grade for student " + studentId);
+    String esa = esaDialog.showAndWait().orElse("");
+
+    uploadGrade(studentId, teamId, phase, isa1, isa2, esa);
 }
 
     private void showAlert(String title, String message) {
