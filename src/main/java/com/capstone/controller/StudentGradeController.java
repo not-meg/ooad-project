@@ -18,15 +18,6 @@ interface GradeFactory {
 class StandardGradeFactory implements GradeFactory {
     @Override
     public StudentGrade createGrade(StudentGrade gradeData) {
-        // Create a new StudentGrade instance with data from the request
-        // This implementation doesn't rely on specific getters/setters
-        // but just returns a processed version of the grade
-        
-        // If you need to perform validations or transformations
-        // you can do so here without modifying the original object
-        
-        // For now, we'll just return the object as is
-        // since we don't know the actual structure of your StudentGrade class
         return gradeData;
     }
 }
