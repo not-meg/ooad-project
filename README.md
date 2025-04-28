@@ -15,3 +15,8 @@ During evaluations, in addition to the faculty guide, a panel of members assesse
 In the final phase, students must submit a research paper to a Scopus-indexed or Web of Science-indexed journal or conference, which is a critical requirement for project completion.
 To maintain security, transparency, and accountability, the system enforces strict role-based access control. Students can only manage their project-related submissions, faculty members oversee only their assigned teams, and administrators handle system-wide management. Additionally, students cannot switch teams once a project is registered, ensuring commitment to their assigned project. Faculty members cannot evaluate projects they are not mentoring, preventing conflicts of interest.
 The Capstone Project Management System provides a structured approach to capstone project management by integrating project tracking, document submissions, faculty evaluations, and research paper submissions. By ensuring clear communication and streamlined processes, the system enhances collaboration between students and faculty, making the entire capstone experience more efficient and well-organised.
+
+### before running:
+- update applications.properties with your own mongodb atlas uri
+- create the appropriate db and collections (users) on mongodb
+- update credentials.json with your own api key from google cloud for storing files in gdrive
